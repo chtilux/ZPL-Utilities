@@ -37,10 +37,13 @@ object mainW: TmainW
     Height = 19
     Panels = <
       item
-        Width = 150
+        Width = 300
       end
       item
         Width = 300
+      end
+      item
+        Width = 150
       end
       item
         Width = 50
@@ -545,6 +548,7 @@ object mainW: TmainW
           MinValue = 0
           TabOrder = 0
           Value = 0
+          OnChange = xTextPosChange
         end
         object yTextPos: TSpinEdit
           Left = 153
@@ -556,6 +560,7 @@ object mainW: TmainW
           MinValue = 0
           TabOrder = 1
           Value = 0
+          OnChange = xTextPosChange
         end
         object TextEdit: TEdit
           Left = 80
@@ -710,6 +715,14 @@ object mainW: TmainW
           Hint = 'Shorcut : A(lignment)'
           Style = csDropDownList
           TabOrder = 19
+        end
+        object Button11: TButton
+          Left = 744
+          Top = 98
+          Width = 154
+          Height = 19
+          Action = BarCodeFromTextAction
+          TabOrder = 20
         end
       end
       object codePanel: TPanel
@@ -2800,6 +2813,10 @@ object mainW: TmainW
       Caption = 'End the line'
       Hint = 'Add the ending line balise'
       OnExecute = EndLineActionExecute
+    end
+    object BarCodeFromTextAction: TAction
+      Caption = 'Bar code from Text'
+      OnExecute = BarCodeFromTextActionExecute
     end
   end
   object SynZPLSyn1: TSynZPLSyn

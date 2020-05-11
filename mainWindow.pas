@@ -13,11 +13,10 @@ uses
 
 type
   TZPLCmd = (zmdStartLabel, zmdEndlabel, zmdTextData, zmdLineComment,
-             zmdBlocComment, zmdLogo, zmdBarCode, zmdCode, zmdEOL, {zmdAlign,}
-             zmdFont, zmdOrigin, zmdPrintOrientation, zmdFieldOrientation);
+             zmdBlocComment, zmdLogo, zmdBarCode, zmdCode, zmdEOL,
+             zmdFont, zmdOrigin, zmdPrintOrientation, zmdFieldOrientation,
+             zmdGraphic);
 
-
-  // TZPLCommandCmd = class;
 
   TZPLCommandEngine = class;
 
@@ -141,6 +140,8 @@ type
     Button10: TButton;
     FieldOrientationBox: TComboBox;
     SynZPLSyn1: TSynZPLSyn;
+    BarCodeFromTextAction: TAction;
+    Button11: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -185,6 +186,8 @@ type
     procedure DatabaseFieldActionExecute(Sender: TObject);
     procedure GraphicActionExecute(Sender: TObject);
     procedure lvDblClick(Sender: TObject);
+    procedure BarCodeFromTextActionExecute(Sender: TObject);
+    procedure xTextPosChange(Sender: TObject);
 
   private
     { Déclarations privées }
@@ -220,6 +223,7 @@ type
     function AppendTextToSourceCodeLine(AText: string): integer;
     procedure DatabaseFieldOrLabel(AText: string);
     procedure extractZPLFromXML(const filename: string);
+    procedure BarCodeFromText(const Text: string);
   public
     { Déclarations publiques }
   end;
@@ -294,6 +298,11 @@ type
   end;
 
   TZPLEOLCmd = class(TZPLCommand)
+  public
+    function getStrCmd: string; override;
+  end;
+
+  TZPLGraphic = class(TZPLCommand)
   public
     function getStrCmd: string; override;
   end;
@@ -435,9 +444,38 @@ begin
   Result := iLine;
 end;
 
-procedure TmainW.GraphicActionExecute(Sender: TObject);
+procedure TmainW.BarCodeFromText(const Text: string);
 var
   zmd: TZPLBarCode;
+  zo: TZPLOrigin;
+begin
+  zmd := nil;
+  zo := TZPLOrigin(pvEngine.getZPLCommandValueObject(zmdOrigin));
+  try
+    zo.X := xTextPos.Value;
+    zo.Y := yTextPos.Value;
+    zo.dpi := ZPLPrintDensity[pvLabel.Density];
+    zo.Comment := commentsFieldOriginBox.Checked;
+
+    zmd := TZPLBarCode(pvEngine.getZPLCommandValueObject(zmdBarCode));
+    zmd.Text := Text;
+
+    zplSource.CaretY := Succ(InsertSourceCodeLine(getSourceLine([zo,zmd])));
+    zplSourceChange(Self);
+  finally
+    zo.Free;
+    zmd.Free;
+  end;
+end;
+
+procedure TmainW.BarCodeFromTextActionExecute(Sender: TObject);
+begin
+  BarCodeFromText(TextEdit.Text);
+end;
+
+procedure TmainW.GraphicActionExecute(Sender: TObject);
+var
+  zmd: TZPLGraphic;
   zo: TZPLOrigin;
   za: TZPLFieldOrientation;
 begin
@@ -449,7 +487,7 @@ begin
     zo.dpi := ZPLPrintDensity[pvLabel.Density];
     zo.Comment := commentsFieldOriginBox.Checked;
 
-    zmd := TZPLBarCode(pvEngine.getZPLCommandValueObject(zmdBarCode));
+    zmd := TZPLGraphic(pvEngine.getZPLCommandValueObject(zmdGraphic));
     zmd.Text := GraphicsBox.Text;
 
     za := TZPLFieldOrientation(pvEngine.getZPLCommandValueObject(zmdFieldOrientation));
@@ -1322,6 +1360,11 @@ begin
   helpPanel.Visible := not helpPanel.Visible;
 end;
 
+procedure TmainW.xTextPosChange(Sender: TObject);
+begin
+  sb.Panels[3].Text := Format('x=%d, y=%d',[xTextPos.Value * pvDpMM,yTextPos.Value * pvDpMM]);
+end;
+
 procedure TmainW.ZPLActionsUpdate(Action: TBasicAction; var Handled: Boolean);
 begin
   StartLabelAction.Enabled := not pvChanged;
@@ -1461,8 +1504,10 @@ begin
       Result := TZPLOrigin;
     zmdPrintOrientation:
       Result := TZPLPrintorientation;
-    zmdBarCode :
+    zmdBarCode:
       Result := TZPLBarCode;
+    zmdGraphic:
+      Result := TZPLGraphic;
     zmdFieldOrientation:
       Result := TZPLFieldOrientation;
   else
@@ -1597,9 +1642,16 @@ end;
 
 { TZPLBarCode }
 
-function TZPLBarCode.getStrCmd: string;
+function TZPLGraphic.getStrCmd: string;
 begin
   Result := Format('^XG%s,1,1^FS',[Text]);
+end;
+
+{ TZPLBarCode }
+
+function TZPLBarCode.getStrCmd: string;
+begin
+  Result := Text;
 end;
 
 { TZPLFieldOrientation }
