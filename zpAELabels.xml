@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfLabelFormat xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<LabelFormat>
+		<Name>None</Name>
+		<Width>0</Width>
+		<Height>0</Height>
+		<Orientation>0</Orientation>
+	</LabelFormat>
+	<LabelFormat>
+		<Name>Porc</Name>
+		<Width>101</Width>
+		<Height>297</Height>
+		<Orientation>1</Orientation>
+	</LabelFormat>
+	<LabelFormat>
+		<Name>A4 Portrait</Name>
+		<Width>210</Width>
+		<Height>297</Height>
+		<Orientation>0</Orientation>
+	</LabelFormat>
+	<LabelFormat>
+		<Name>Carré</Name>
+		<Width>100</Width>
+		<Height>100</Height>
+		<Orientation>0</Orientation>
+	</LabelFormat>
+	<LabelFormat><Name>Porc</Name><Width>101</Width><Height>297</Height><Orientation>0</Orientation></LabelFormat></ArrayOfLabelFormat>

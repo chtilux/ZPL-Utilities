@@ -1,0 +1,529 @@
+<ZPLLines Version="0.2">
+  <LabelFormat>
+    <Name>Porc</Name>
+    <Width>101</Width>
+    <Height>297</Height>
+    <Orientation>1</Orientation>
+  </LabelFormat>
+  <Lines>
+    <ZPLLine Index="0">
+      <Value>^XA</Value>
+    </ZPLLine>
+    <ZPLLine Index="1">
+      <Value>^POI</Value>
+    </ZPLLine>
+    <ZPLLine Index="2">
+      <Value>// LOGO_EIFEL_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="3">
+      <Value>^FX x=2, y=85 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="4">
+      <Value>^FO0024,1020 ^FWN,0 ^FDR:EIFEL.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="5">
+      <Value>^FX x=52, y=85 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="6">
+      <Value>^FO0624,1020 ^FWN,0 ^FDR:EIFEL.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="7">
+      <Value>// LOGO_EIFEL_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="8">
+      <Value>// ORGAINVENT_LABEL_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="9">
+      <Value>^FX x=45, y=58 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="10">
+      <Value>^FO0540,0696 ^CF0,20,20 ^FWR,0 ^FDOrgaInvent :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="11">
+      <Value>^FX x=95, y=58 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="12">
+      <Value>^FO1140,0696 ^CF0,20,20 ^FWR,0 ^FDOrgaInvent :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="13">
+      <Value>// ORGINVENT_LABEL_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="14">
+      <Value>// ORGAINVEN_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="15">
+      <Value>^FX x=45, y=77 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="16">
+      <Value>^FO0540,0924 ^CF0,20,20 ^FWR,0 ^FD&lt;&lt;OrgaInvent&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="17">
+      <Value>^FX x=95, y=77 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="18">
+      <Value>^FO1140,0924 ^CF0,20,20 ^FWR,0 ^FD&lt;&lt;OrgaInvent&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="19">
+      <Value>// ORGAINVENT_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="20">
+      <Value>// DATETIME_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="21">
+      <Value>^FX x=34, y=58 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="22">
+      <Value>^FO0408,0696 ^CF0,20,20 ^FWR,0 ^FD&lt;&lt;DATETIME&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="23">
+      <Value>^FX x=84, y=58 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="24">
+      <Value>^FO1008,0696 ^CF0,20,20 ^FWR,0 ^FD&lt;&lt;DATETIME&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="25">
+      <Value>// DATETIME_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="26">
+      <Value>// LOGO_MIL_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="27">
+      <Value>^FX x=2, y=110 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="28">
+      <Value>^FO0024,1320 ^FWN,0 ^FDR:MIL.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="29">
+      <Value>^FX x=52, y=110 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="30">
+      <Value>^FO0624,1320 ^FWN,0 ^FDR:MIL.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="31">
+      <Value>// LOGO_MIL_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="32">
+      <Value>// BAR_CODE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="33">
+      <Value>^FX x=5, y=113 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="34">
+      <Value>^FO0060,1356 ^BCN,120,N,N,Y^FD&gt;:6TT&lt;&lt;NO_DOCUMENT&gt;&gt;02^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="35">
+      <Value>^FX x=55, y=113 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="36">
+      <Value>^FO0660,1356 ^BCN,120,N,N,Y^FD&gt;:6TT&lt;&lt;NO_DOCUMENT&gt;&gt;02^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="37">
+      <Value>// BAR_CODE_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="38">
+      <Value>// LOGO_QS_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="39">
+      <Value>^FX x=5, y=126 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="40">
+      <Value>^FO0060,1512 ^FWN,0 ^FDR:QS.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="41">
+      <Value>^FX x=55, y=126 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="42">
+      <Value>^FO0660,1512 ^FWN,0 ^FDR:QS.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="43">
+      <Value>// LOGO_QS_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="44">
+      <Value>// LOGO_MARQUE_NATIONALE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="45">
+      <Value>^FX x=25, y=126 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="46">
+      <Value>^FO0300,1512 ^FWN,0 ^FDR:MN.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="47">
+      <Value>^FX x=75, y=126 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="48">
+      <Value>^FO0900,1512 ^FWN,0 ^FDR:MN.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="49">
+      <Value>// LOGO_MARQUE_NATIONALE_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="50">
+      <Value>// LOGO_LETZ_BIO_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="51">
+      <Value>^FX x=20, y=150 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="52">
+      <Value>^FO0240,1800 ^FWN,0 ^FDR:BIOLETZ.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="53">
+      <Value>^FX x=70, y=150 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="54">
+      <Value>^FO0840,1800 ^FWN,0 ^FDR:BIOLETZ.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="55">
+      <Value>^FX x=17, y=158 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="56">
+      <Value>^FO0204,1896 ^CF0,30,30 ^FWN,0 ^FDLU-BIO-04^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="57">
+      <Value>^FX x=67, y=158 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="58">
+      <Value>^FO0804,1896 ^CF0,30,30 ^FWN,0 ^FDLU-BIO-04^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="59">
+      <Value>// LOGO_LETZ_BIO_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="60">
+      <Value>// LOGO_CEE_STARS_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="61">
+      <Value>^FX x=15, y=150 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="62">
+      <Value>^FO0180,1800 ^FWN,0 ^FDR:STARS.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="63">
+      <Value>^FX x=65, y=150 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="64">
+      <Value>^FO0780,1800 ^FWN,0 ^FDR:STARS.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="65">
+      <Value>^FX x=17, y=158 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="66">
+      <Value>^FO0204,1896 ^CF0,30,30 ^FWN,0 ^FDLU-BIO-04^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="67">
+      <Value>^FX x=67, y=158 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="68">
+      <Value>^FO0804,1896 ^CF0,30,30 ^FWN,0 ^FDLU-BIO-04^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="69">
+      <Value>// LOGO_CEE_STARS_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="70">
+      <Value>// LOGO_CE3_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="71">
+      <Value>^FX x=20, y=162 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="72">
+      <Value>^FO0240,1944 ^FWN,0 ^FDR:CE3.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="73">
+      <Value>^FX x=70, y=162 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="74">
+      <Value>^FO0840,1944 ^FWN,0 ^FDR:CE3.GRF,1,1^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="75">
+      <Value>// LOGO_CE3_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="76">
+      <Value>// ABATTOIR_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="77">
+      <Value>^FX x=2, y=181 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="78">
+      <Value>^FO0024,2172 ^CF0,45,45 ^FWN,0 ^FDABATTOIR ETTELBRUCK S.A.^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="79">
+      <Value>^FX x=52, y=181 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="80">
+      <Value>^FO0624,2172 ^CF0,45,45 ^FWN,0 ^FDABATTOIR ETTELBRUCK S.A.^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="81">
+      <Value>^FX x=2, y=185 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="82">
+      <Value>^FO0024,2220 ^GB530,0,6,b^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="83">
+      <Value>^FX x=52, y=185 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="84">
+      <Value>^FO0624,2220 ^GB530,0,6,b^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="85">
+      <Value>// ABATTOIR_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="86">
+      <Value>^FX x=17, y=189 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="87">
+      <Value>^FO0204,2268 ^CF0,20,20 ^FWN,1 ^FDGenre :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="88">
+      <Value>^FX x=67, y=189 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="89">
+      <Value>^FO0804,2268 ^CF0,20,20 ^FWN,1 ^FDGenre :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="90">
+      <Value>^FX x=19, y=189 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="91">
+      <Value>^FO0228,2268 ^CF0,20,20 ^FWN,0 ^FD&lt;&lt;GENRE&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="92">
+      <Value>^FX x=69, y=189 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="93">
+      <Value>^FO0828,2268 ^CF0,20,20 ^FWN,0 ^FD&lt;&lt;GENRE&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="94">
+      <Value>^FX x=17, y=193 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="95">
+      <Value>^FO0204,2316 ^CF0,20,20 ^FWN,1 ^FDNo.Marche :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="96">
+      <Value>^FX x=67, y=193 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="97">
+      <Value>^FO0804,2316 ^CF0,20,20 ^FWN,1 ^FDNo.Marche :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="98">
+      <Value>^FX x=19, y=193 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="99">
+      <Value>^FO0228,2316 ^CF0,35,35 ^FWN,0 ^FD&lt;&lt;NUMERO_MARCHE&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="100">
+      <Value>^FX x=69, y=193 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="101">
+      <Value>^FO0828,2316 ^CF0,35,35 ^FWN,0 ^FD&lt;&lt;NUMERO_MARCHE&gt;&gt;^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="102">
+      <Value>// POIDS_FROID_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="103">
+      <Value>^FX x=17, y=203 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="104">
+      <Value>^FO0204,2436 ^CF0,20,20 ^FWN,1 ^FDPoids froid :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="105">
+      <Value>^FX x=67, y=203 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="106">
+      <Value>^FO0804,2436 ^CF0,20,20 ^FWN,1 ^FDPoids froid :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="107">
+      <Value>^FX x=19, y=203 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="108">
+      <Value>^FO0228,2436 ^CF0,30,30 ^FWN,0 ^FD&lt;&lt;ABAT_POIDS_FROID&gt;&gt; kg^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="109">
+      <Value>^FX x=69, y=203 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="110">
+      <Value>^FO0828,2436 ^CF0,30,30 ^FWN,0 ^FD&lt;&lt;ABAT_POIDS_FROID&gt;&gt; kg^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="111">
+      <Value>// POIDS_FROID_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="112">
+      <Value>// POIDS_CHAUD_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="113">
+      <Value>^FX x=17, y=203 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="114">
+      <Value>^FO0204,2436 ^CF0,20,20 ^FWN,1 ^FDPoids chaud :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="115">
+      <Value>^FX x=67, y=203 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="116">
+      <Value>^FO0804,2436 ^CF0,20,20 ^FWN,1 ^FDPoids chaud :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="117">
+      <Value>^FX x=19, y=203 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="118">
+      <Value>^FO0228,2436 ^CF0,30,30 ^FWN,0 ^FD&lt;&lt;ABAT_POIDS_CHAUD&gt;&gt; kg^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="119">
+      <Value>^FX x=69, y=203 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="120">
+      <Value>^FO0828,2436 ^CF0,30,30 ^FWN,0 ^FD&lt;&lt;ABAT_POIDS_CHAUD&gt;&gt; kg^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="121">
+      <Value>// POIDS_CHAUD_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="122">
+      <Value>^FX x=17, y=208 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="123">
+      <Value>^FO0204,2496 ^CF0,20,20 ^FWN,1 ^FDMarque prod. :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="124">
+      <Value>^FX x=67, y=208 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="125">
+      <Value>^FO0804,2496 ^CF0,20,20 ^FWN,1 ^FDMarque prod. :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="126">
+      <Value>^FX x=19, y=208 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="127">
+      <Value>^FO0228,2496 ^CF0,20,20 ^FWN,0 ^FD&lt;&lt;MARQUE_PROD&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="128">
+      <Value>^FX x=69, y=208 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="129">
+      <Value>^FO0828,2496 ^CF0,20,20 ^FWN,0 ^FD&lt;&lt;MARQUE_PROD&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="130">
+      <Value>^FX x=17, y=212 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="131">
+      <Value>^FO0204,2544 ^CF0,20,20 ^FWN,1 ^FDAbattu le :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="132">
+      <Value>^FX x=67, y=212 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="133">
+      <Value>^FO0804,2544 ^CF0,20,20 ^FWN,1 ^FDAbattu le :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="134">
+      <Value>^FX x=19, y=212 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="135">
+      <Value>^FO0228,2544 ^CF0,20,20 ^FWN,0 ^FD&lt;&lt;DATE_DOCUMENT&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="136">
+      <Value>^FX x=69, y=212 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="137">
+      <Value>^FO0828,2544 ^CF0,20,20 ^FWN,0 ^FD&lt;&lt;DATE_DOCUMENT&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="138">
+      <Value>// CLASSE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="139">
+      <Value>^FX x=17, y=217 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="140">
+      <Value>^FO0204,2604 ^CF0,20,20 ^FWN,1 ^FDClasse :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="141">
+      <Value>^FX x=67, y=217 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="142">
+      <Value>^FO0804,2604 ^CF0,20,20 ^FWN,1 ^FDClasse :^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="143">
+      <Value>^FX x=19, y=217 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="144">
+      <Value>^FO0228,2604 ^CF0,30,30 ^FWN,0 ^FD&lt;&lt;CLASSE&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="145">
+      <Value>^FX x=69, y=217 ^FS</Value>
+    </ZPLLine>
+    <ZPLLine Index="146">
+      <Value>^FO0828,2604 ^CF0,30,30 ^FWN,0 ^FD&lt;&lt;CLASSE&gt;&gt;^FS </Value>
+    </ZPLLine>
+    <ZPLLine Index="147">
+      <Value>// CLASSE_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="148">
+      <Value>// PAYS_ELEVAGE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="149">
+      <Value>// PAYS_ELEVAGE_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="150">
+      <Value>// ORIGINE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="151">
+      <Value>// ORIGINE_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="152">
+      <Value>// PAYS_ABATTAGE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="153">
+      <Value>// PAYS_ABATTAGE_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="154">
+      <Value>// NOM_ELEVEUR_1_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="155">
+      <Value>// NOM_ELEVEUR_1_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="156">
+      <Value>// VENTE_A_PARTIR_DE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="157">
+      <Value>// VENTE_A_PARTIR_DE_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="158">
+      <Value>// REMARQUE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="159">
+      <Value>// REMARQUE_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="160">
+      <Value>// NOM_ELEVEUR_2_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="161">
+      <Value>// NOM_ELEVEUR_2_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="162">
+      <Value>// LOGO_EISLEKER_GOURMET_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="163">
+      <Value>// LOGO_EISLEKER_GOURMET_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="164">
+      <Value>// LOGO_SYMBOLE_COCARDE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="165">
+      <Value>// LOGO_SYMBOLE_COCARDE_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="166">
+      <Value>// BARCODE_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="167">
+      <Value>// BARCODE_END </Value>
+    </ZPLLine>
+    <ZPLLine Index="168">
+      <Value>// LABEL_PCQ_PC_PQ_P_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="169">
+      <Value>// LABEL_PCQ_PC_PQ_P_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="170">
+      <Value>// LABEL_JAMBON_START</Value>
+    </ZPLLine>
+    <ZPLLine Index="171">
+      <Value>// LABEL_JAMBON_END</Value>
+    </ZPLLine>
+    <ZPLLine Index="172">
+      <Value>^XZ </Value>
+    </ZPLLine>
+  </Lines>
+</ZPLLines>
