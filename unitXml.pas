@@ -8,28 +8,28 @@ uses
 type
   TXMLToView = class
   private
-    function getAttr(node: IXMLNode; const name: string): string;
+    class function getAttr(node: IXMLNode; const name: string): string;
   protected
-//    procedure DOM2Tree(node: IXMLNode; tv: TTreeView; tn: TTreeNode);
+//    class procedure DOM2Tree(node: IXMLNode; tv: TTreeView; tn: TTreeNode);
   public
-//    procedure xmlToListView(lv: TListView; const filename: string);
-//    procedure xmlToTreeView(lv: TTreeView; const filename: string);
-    function xmlZPLCommandsToObjectList(const filename: string): TObjectList<TZPLCommand>;
-    function xmlZPLLabelsToObjectList(const filename: string): TObjectList<TZPLLabelSettings>;
-    procedure xmlSaveLabelSettings(lbl: TZPLLabelSettings; const filename: string);
-    procedure xmlSaveLabel(lbl: TZPLLabel; const filename: string);
+//    class procedure xmlToListView(lv: TListView; const filename: string);
+//    class procedure xmlToTreeView(lv: TTreeView; const filename: string);
   public
+    class procedure xmlSaveLabelSettings(lbl: TZPLLabelSettings; const filename: string);
+    class function xmlZPLLabelsToObjectList(const filename: string): TObjectList<TZPLLabelSettings>;
+    class function xmlZPLCommandsToObjectList(const filename: string): TObjectList<TZPLCommand>;
+    class procedure xmlSaveLabel(lbl: TZPLLabel; const filename: string);
     class function xmlExtractZPL(const filename: string): TZPLLabelValues;
   end;
 
 implementation
 
 uses
-  SysUtils, Xml.XMLDom, Variants, u_pro_strings;
+  SysUtils, Xml.XMLDom, Variants, u_pro_strings, Forms;
 
 { TXMLToListView }
 
-function TXMLToView.getAttr(node: IXMLNode; const name: string): string;
+class function TXMLToView.getAttr(node: IXMLNode; const name: string): string;
 var
   o: IXMLNode;
 begin
@@ -134,7 +134,7 @@ end;
 //  end;
 //end;
 
-procedure TXMLToView.xmlSaveLabelSettings(lbl: TZPLLabelSettings; const filename: string);
+class procedure TXMLToView.xmlSaveLabelSettings(lbl: TZPLLabelSettings; const filename: string);
 var
   doc: IXMLDocument;
   root, node: IXMLNode;
@@ -150,7 +150,7 @@ begin
   doc.SaveToFile(filename);
 end;
 
-function TXMLToView.xmlZPLCommandsToObjectList(
+class function TXMLToView.xmlZPLCommandsToObjectList(
   const filename: string): TObjectList<TZPLCommand>;
 var
   cmd: TZPLCommand;
@@ -223,7 +223,7 @@ begin
   end;
 end;
 
-function TXMLToView.xmlZPLLabelsToObjectList(
+class function TXMLToView.xmlZPLLabelsToObjectList(
   const filename: string): TObjectList<TZPLLabelSettings>;
 var
   doc: IXMLDocument;
@@ -302,11 +302,15 @@ end;
 //  end;
 //end;
 
-procedure TXMLToView.xmlSaveLabel(lbl: TZPLLabel; const filename: string);
+class procedure TXMLToView.xmlSaveLabel(lbl: TZPLLabel; const filename: string);
 var
   doc: IXMLDocument;
   root, lines, node: IXMLNode;
-  i: Integer;
+  i,j,k: Integer;
+  lcLine, fname: string;
+  writer: TStreamWriter;
+  bin,
+  graphics: string;
 begin
   doc := TXMLDocument.Create(nil);
   doc.Active := True;
@@ -318,12 +322,75 @@ begin
   node.AddChild('Width').Text := lbl.width.ToString;
   node.AddChild('Height').Text := lbl.height.ToString;
   node.AddChild('Orientation').Text := Ord(lbl.PrintOrientation).ToString;
+  node.AddChild('PrintDensity').Text := ZPLPrintDensity[lbl.Density].ToString;
   lines := root.AddChild('Lines');
   for i := 0 to lbl.Lines.Count-1 do
   begin
-    node := lines.AddChild('ZPLLine');
-    node.Attributes['Index'] := IntToStr(i);
-    node.AddChild('Value').NodeValue := lbl.Lines[i];
+    lcLine := lbl.Lines[i].Trim;
+    if lcLine <> '' then
+    begin
+      node := lines.AddChild('ZPLLine');
+      node.Attributes['Index'] := IntToStr(i);
+      j := Pos('~DG', lcLine.ToUpper);
+      if j > 0 then
+      begin
+        { delete ~DGR: }
+        Delete(lcLine,1,5);
+        j := Pos('.GRF', lcLine.ToUpper);
+        if j > 0 then
+        begin
+          { extract graphic identifier }
+          fname := Copy(lcLine,1,j+3);
+          node.AddChild('Value').NodeValue := fname;
+          node.Attributes['Type'] := 'GraphicFile';
+          Delete(lcLine,1,j+3);
+          { write the graphic to file }
+          bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+          graphics := IncludeTrailingPathDelimiter(Format('%s\%s',[bin,'graphics']));
+          fname := Format('%s\%s',[graphics,fname]);
+          if not FileExists(fname) then
+          begin
+            writer := TStreamWriter.Create(fname, False, TEncoding.UTF8);
+            try
+              writer.Write(lcLine);
+            finally
+              writer.Free;
+            end;
+          end;
+        end;
+      end
+      else
+      begin
+        node.AddChild('Value').NodeValue := lcLine;
+        j := Pos('^FO',lcLine.ToUpper);
+        if j > 0 then
+        begin
+          node.Attributes['Type'] := 'FieldOrigin';
+          Delete(lcLine,1, j+2);
+          j := Pos(',',lcLine);
+          if j > 0 then
+          begin
+            k := StrToIntDef(Copy(lcLine,1,Pred(j)),0);
+            node.Attributes['X'] := k.ToString;
+            Delete(lcLine,1,j);
+            for j := 1 to length(lcLine) do
+            begin
+              if not(CharInSet(lcLine[j],['0'..'9'])) then
+              begin
+                k := StrToIntDef(Copy(lcLine,1,Pred(j)),0);
+                Break;
+              end;
+            end;
+            node.Attributes['Y'] := k.ToString;
+          end;
+        end;
+      end;
+    end
+    else
+    begin
+      node := lines.AddChild('ZPLBlankLine');
+      node.Attributes['Index'] := IntToStr(i);
+    end;
   end;
   doc.SaveToFile(filename);
 end;
@@ -331,10 +398,13 @@ end;
 class function TXMLToView.xmlExtractZPL(const filename: string): TZPLLabelValues;
 var
   doc: IXMLDocument;
-  root, lines, node, line: IXMLNode;
+  root, node, line: IXMLNode;
   i,j: Integer;
-  s: string;
+  s, fname: string;
+  stream: TStreamReader;
   v: variant;
+  bin,
+  graphics: string;
 begin
   Result := TZPLLabelValues.Create;
   doc := TXMLDocument.Create(filename);
@@ -351,13 +421,64 @@ begin
           for j := 0 to node.ChildNodes.Count-1 do
           begin
             line := node.ChildNodes[j];
-            v := line.ChildNodes.Nodes['Value'].NodeValue;
-            if not VarIsNull(v) then
+            if line.NodeName.ToLower = 'zplline' then
             begin
-              s := v;
-              s := FindAndReplaceAll(s, '&lt;','<');
-              s := FindAndReplaceAll(s, '&gt;','>');
-              Result.Lines.Add(s);
+              v := line.Attributes['Type'];
+              if VarIsNull(v) then
+              begin
+                v := line.ChildNodes.Nodes['Value'].NodeValue;
+                if not VarIsNull(v) then
+                begin
+                  s := v;
+                  s := FindAndReplaceAll(s, '&lt;','<');
+                  s := FindAndReplaceAll(s, '&gt;','>');
+                  Result.Lines.Add(s);
+                end;
+              end
+              else
+              begin
+                v := line.Attributes['Type'];
+                if not VarIsNull(v) then
+                begin
+                  if v = 'GraphicFile' then
+                  begin
+                    s := '';
+                    v := line.ChildNodes.Nodes['Value'].NodeValue;
+                    if not VarIsNull(v) then
+                    begin
+                      bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+                      graphics := IncludeTrailingPathDelimiter(Format('%s\%s',[bin,'graphics']));
+                      fname := Format('%s\%s',[graphics,v]);
+                      if FileExists(fname) then
+                      begin
+                        stream := TStreamReader.Create(fname,TEncoding.UTF8,True);
+                        try
+                          s := stream.ReadLine;
+                        finally
+                          stream.Free;
+                        end;
+                        Result.Lines.Add(Format('%s%s%s',['~DGR:',v,s]));
+                      end;
+                    end;
+                  end
+                  else
+                  begin
+                    v := line.ChildNodes.Nodes['Value'].NodeValue;
+                    if not VarIsNull(v) then
+                    begin
+                      s := v;
+                      s := FindAndReplaceAll(s, '&lt;','<');
+                      s := FindAndReplaceAll(s, '&gt;','>');
+                      Result.Lines.Add(s);
+                    end;
+                  end;
+                end;
+              end;
+            end
+            else
+            if line.NodeName.ToLower = 'zplblankline' then
+            begin
+              Result.Lines.Add('');
             end;
           end;
         end
@@ -387,6 +508,11 @@ begin
           begin
             s := v;
             Result.ALabel.orientation := TPrintOrientation(StrToIntDef(s,0));
+          end;
+          v := line.ChildNodes['PrintDensity'].NodeValue;
+          if not VarIsNull(v) then
+          begin
+            Result.ALabel.density := v;
           end;
         end;
       end;

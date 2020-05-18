@@ -6,16 +6,16 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.ComCtrls,
-  System.Actions, Vcl.ActnList, Vcl.Menus, System.ImageList, Vcl.ImgList,
+  System.Actions, Vcl.ActnList, Vcl.Menus, Vcl.ImgList,
   Vcl.ToolWin, Generics.Collections, Vcl.StdCtrls, Vcl.Samples.Spin,
   Vcl.Buttons, zplUtils, SynEdit, SynEditHighlighter, SynHighlighterZPL,
-  VCLPatches;
+  PdfiumCtrl, MruUnit;
 
 type
   TZPLCmd = (zmdStartLabel, zmdEndlabel, zmdTextData, zmdLineComment,
              zmdBlocComment, zmdLogo, zmdBarCode, zmdCode, zmdEOL,
              zmdFont, zmdOrigin, zmdPrintOrientation, zmdFieldOrientation,
-             zmdGraphic);
+             zmdGraphic, zmdHorzLine, zmdVertLine, zmdLineOrigin);
 
 
   TZPLCommandEngine = class;
@@ -29,7 +29,6 @@ type
     previewPanel: TPanel;
     Splitter2: TSplitter;
     wkPanel: TPanel;
-    Splitter3: TSplitter;
     helpPanel: TPanel;
     cmdPanel: TPanel;
     codePanel: TPanel;
@@ -120,16 +119,12 @@ type
     EndLabelAction: TAction;
     LabelDatabaseFieldAction: TAction;
     CommentBlocAction: TAction;
-    LogoAction: TAction;
     GraphicAction: TAction;
     CommandAction: TAction;
     CommentLineAction: TAction;
     EndLineAction: TAction;
-    Button1: TButton;
-    Button2: TButton;
     Button3: TButton;
     Button4: TButton;
-    Button5: TButton;
     Button6: TButton;
     Button7: TButton;
     DatabaseFieldAction: TAction;
@@ -142,6 +137,41 @@ type
     SynZPLSyn1: TSynZPLSyn;
     BarCodeFromTextAction: TAction;
     Button11: TButton;
+    SaveAsFileAction: TAction;
+    ToolButton16: TToolButton;
+    SaveAs1: TMenuItem;
+    PreviewLabelAction: TAction;
+    ToolButton17: TToolButton;
+    pdfPanel: TPanel;
+    rotateAction: TAction;
+    ToolButton18: TToolButton;
+    mru: TMostRecentFiles;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    Previewlabel1: TMenuItem;
+    Actions1: TMenuItem;
+    Startanewlabel1: TMenuItem;
+    Endthelabel1: TMenuItem;
+    Commentline1: TMenuItem;
+    CommentblocCtrlM1: TMenuItem;
+    Endtheline1: TMenuItem;
+    AddaZPLcommand1: TMenuItem;
+    LabeldatabasefieldCtrlL1: TMenuItem;
+    DatabasefieldCtrlD1: TMenuItem;
+    N5: TMenuItem;
+    Addagraphicallogo1: TMenuItem;
+    BarcodefromTextCtrlB1: TMenuItem;
+    GetGraphics1: TMenuItem;
+    MRUMenuItem: TMenuItem;
+    UpdateFieldOriginAction: TAction;
+    Button12: TButton;
+    HorizontalLineAction: TAction;
+    LineLength: TEdit;
+    LineThick: TEdit;
+    Label6: TLabel;
+    Button1: TButton;
+    VerticalLineAction: TAction;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -188,6 +218,14 @@ type
     procedure lvDblClick(Sender: TObject);
     procedure BarCodeFromTextActionExecute(Sender: TObject);
     procedure xTextPosChange(Sender: TObject);
+    procedure SaveAsFileActionExecute(Sender: TObject);
+    procedure PreviewLabelActionExecute(Sender: TObject);
+    procedure rotateActionExecute(Sender: TObject);
+    procedure mruMenuClick(Sender: TObject; const Filename: string);
+    procedure UpdateFieldOriginActionExecute(Sender: TObject);
+    procedure HorizontalLineActionExecute(Sender: TObject);
+    procedure LineLengthKeyPress(Sender: TObject; var Key: Char);
+    procedure VerticalLineActionExecute(Sender: TObject);
 
   private
     { Déclarations privées }
@@ -197,6 +235,7 @@ type
     pvChanged: Boolean;
     pvDpMM: integer;
     pvFilename: string;
+    pvPdf: TPdfControl;
 
     pvLoading: boolean;
     pvLabel: TZPLLabel;
@@ -214,9 +253,15 @@ type
     function  processChar(var k: Char): Boolean;
     procedure computesDotsPerMM;
     procedure openLabel(const filename: string);
-    procedure labelChanged;
-    procedure GetGraphics;
+    procedure labelFormatChanged;
+    procedure labelFileChanged;
 
+    procedure getGraphicsFromDisk;
+    function getKeywordFromSource(line: string; xPos: integer): string;
+    function GetZPLCmdListItemFromString(cmd: string): TListItem;
+    procedure setXandYTextPosFromSource(Line: string; const dpmm: integer);
+    procedure ComputeXandYFieldOrigin(const ALine, xPos, yPos, dpmm: integer);
+    procedure RecomputeXandYFieldOrigin(currentDpMM,newDpMM: integer);
     function getSourceLine(zmd: array of TZPLCommand): string;
     function addSourceCodeLine(ALine: string): integer;
     function InsertSourceCodeLine(ALine: string): integer;
@@ -224,6 +269,9 @@ type
     procedure DatabaseFieldOrLabel(AText: string);
     procedure extractZPLFromXML(const filename: string);
     procedure BarCodeFromText(const Text: string);
+    procedure PreviewLabel;
+    procedure loadBlankPDF;
+    procedure DrawALine(lineOrientation: TLineOrientation);
   public
     { Déclarations publiques }
   end;
@@ -355,15 +403,136 @@ type
     property dpi: integer read Fdpi write Setdpi;
   end;
 
+  TZPLLine = class;
+
+  TZPLLineOrigin = class(TZPLOrigin)
+  private
+    FLine: TZPLLine;
+    procedure SetLine(const Value: TZPLLine);
+  public
+    function getStrCmd: string; override;
+    property Line: TZPLLine read FLine write SetLine;
+  end;
+
+  TZPLLine = class(TZPLCommand)
+  private
+    FLineOrientation: TLineOrientation;
+    FLength: double;
+    FThick: double;
+    FDotPerMM: integer;
+    procedure SetLength(const Value: double);
+    procedure SetThick(const Value: double);
+    procedure SetDotPerMM(const Value: integer);
+    procedure SetLineOrientation(const Value: TLineOrientation);
+  public
+    function getStrCmd: string; override;
+    property LineOrientation: TLineOrientation read FLineOrientation write SetLineOrientation;
+    property LengthMM: double read FLength write SetLength;
+    property ThickMM: double read FThick write SetThick;
+    property DotPerMM: integer read FDotPerMM write SetDotPerMM;
+  end;
+
+  TZPLHorzLine = class(TZPLLine)
+  public
+    constructor Create;
+  end;
+
+  TZPLVertLine = class(TZPLLine)
+  public
+    constructor Create;
+  end;
+
 var
   mainW: TmainW;
 
 implementation
 
 uses
-  Inifiles, unitXML, UITypes, Clipbrd;
+  Inifiles, unitXML, UITypes, Clipbrd, previewLabelUnit, ShellAPI, PDFiumCore;
 
 {$R *.dfm}
+
+const
+  WEB_SERVICE_FILE: string = 'labelary';
+
+procedure TmainW.FormCreate(Sender: TObject);
+var
+  bin,ini: string;
+begin
+  pvLoading := True;
+  Application.OnHint := OnHint;
+  pvChanged := False;
+  pvLabel := TZPLLabel.Create;
+  pvEngine := TZPLCommandEngine.Create(pvLabel);
+  pvLabelChanged := False;
+
+  {$ifdef cpux64}
+  PDFiumDllDir := ExtractFilePath(ParamStr(0)) + 'x64';
+  {$else}
+  PDFiumDllDir := ExtractFilePath(ParamStr(0)) + 'x86';
+  {$endif cpux32}
+
+  pvPdf := nil;
+
+  mru.OwnerMenuItem := MRUMenuItem;
+  bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  ini := Format('%s\ini\%s',[bin,ChangeFileExt(ExtractFileName(Application.ExeName),'.ini')]);
+  mru.IniFile := ini;
+end;
+
+procedure TmainW.FormDestroy(Sender: TObject);
+var
+  i: integer;
+begin
+  if Assigned(pvZPLCommands) then
+  begin
+    for i := 0 to pvZPLCommands.Count - 1 do
+    begin
+      if Assigned(pvZPLCommands[i]) then
+        TZPLCommand(pvZPLCommands[i]).Free;
+    end;
+    pvZPLCommands.Free;
+  end;
+
+  if Assigned(pvZPLLabels) then
+  begin
+    for i := 0 to pvZPLLabels.Count - 1 do
+    begin
+      if Assigned(pvZPLLabels[i]) then
+        TZPLLabelSettings(pvZPLLabels[i]).Free;
+    end;
+    pvZPLLabels.Free;
+  end;
+  pvEngine.Free;
+  pvLabel.Free;
+end;
+
+procedure TmainW.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  k: Char;
+begin
+  if ssCtrl in Shift then
+  begin
+    k := UpCase(Chr(Key));
+    if processChar(k) then
+      Key := 0;
+  end;
+end;
+
+procedure TmainW.FormKeyPress(Sender: TObject; var Key: Char);
+var
+  k: Char;
+begin
+  if (ActiveControl <> cmdSearch) and (ActiveControl <> zplSource) and
+    (ActiveControl <> TextEdit) and (ActiveControl <> labelDescEdit) and
+    (ActiveControl <> LineLength) and (ActiveControl <> LineThick) then
+  begin
+    k := UpCase(Key);
+    if processChar(k) then
+      Key := #0;
+  end;
+end;
 
 procedure TmainW.GUIActionsUpdate(Action: TBasicAction; var Handled: Boolean);
 const
@@ -375,9 +544,19 @@ begin
   groupZPLCommandsAction.Hint := cs[pvZPLCommandsGroup];
   groupZPLCommandsAction.Caption := cs[pvZPLCommandsGroup];
   saveFileAction.Enabled := pvChanged;
+  SaveAsFileAction.Enabled := (pvFilename.Trim <> '') and FileExists(pvFilename) and (zplSource.Lines.Count > 0);
   exportZPLKeywordsAction.Enabled := not pvChanged;
   saveLabelAction.Enabled := pvLabelChanged;
+  PreviewLabelAction.Enabled := zplSource.Lines.Count > 0;
+  rotateAction.Enabled := Assigned(pvPdf);
+  openFileAction.Enabled := not pvChanged;
+  MRUMenuItem.Enabled := openFileAction.Enabled;
   Handled := True;
+end;
+
+procedure TmainW.HorizontalLineActionExecute(Sender: TObject);
+begin
+  DrawALine(loHorz);
 end;
 
 function TmainW.InsertSourceCodeLine(ALine: string): integer;
@@ -406,6 +585,7 @@ begin
     end;
   end;
   pvChanged := True;
+  labelFileChanged;
   Result := Succ(iLine);
 end;
 
@@ -431,6 +611,7 @@ begin
     end;
   end;
   pvChanged := True;
+  labelFileChanged;
 end;
 
 function TmainW.AppendTextToSourceCodeLine(AText: string): integer;
@@ -477,9 +658,9 @@ procedure TmainW.GraphicActionExecute(Sender: TObject);
 var
   zmd: TZPLGraphic;
   zo: TZPLOrigin;
-  za: TZPLFieldOrientation;
+//  za: TZPLFieldOrientation;
 begin
-  zmd := nil; za := nil;
+  zmd := nil; {za := nil;}
   zo := TZPLOrigin(pvEngine.getZPLCommandValueObject(zmdOrigin));
   try
     zo.X := xTextPos.Value;
@@ -490,15 +671,15 @@ begin
     zmd := TZPLGraphic(pvEngine.getZPLCommandValueObject(zmdGraphic));
     zmd.Text := GraphicsBox.Text;
 
-    za := TZPLFieldOrientation(pvEngine.getZPLCommandValueObject(zmdFieldOrientation));
-    za.Fieldorientation := FieldOrientationBox.FieldOrientationValue;
-    za.Justify := textJustifyBox.TextJustifyValue;
+//    za := TZPLFieldOrientation(pvEngine.getZPLCommandValueObject(zmdFieldOrientation));
+//    za.Fieldorientation := FieldOrientationBox.FieldOrientationValue;
+//    za.Justify := textJustifyBox.TextJustifyValue;
 
-    zplSource.CaretY := Succ(InsertSourceCodeLine(getSourceLine([zo,za,zmd])));
+    zplSource.CaretY := Succ(InsertSourceCodeLine(getSourceLine([zo{,za},zmd])));
     zplSourceChange(Self);
   finally
     zo.Free;
-    za.Free;
+//    za.Free;
     zmd.Free;
   end;
 end;
@@ -522,28 +703,18 @@ begin
   end;
   zplSource.Lines.Clear;
   pvChanged := False;
+  pvFilename := '';
+  labelFileChanged;
+  loadBlankPDF;
 end;
 
 procedure TmainW.cmdSearchChange(Sender: TObject);
 var
   li: TListItem;
-  i: integer;
-  found: Boolean;
 begin
   if Trim(cmdSearch.Text) = '' then
     Exit;
-  li := lv.FindCaption(0, Format('^%s', [Trim(cmdSearch.Text).ToUpper]), True,
-    True, False);
-  if li = nil then
-  begin
-    for i := 0 to lv.Items.Count - 1 do
-    begin
-      found := Pos(Trim(cmdSearch.Text).ToUpper,
-        lv.Items[i].SubItems[0].ToUpper) > 0;
-      if found then
-        li := lv.Items[i];
-    end;
-  end;
+  li := GetZPLCmdListItemFromString(Trim(cmdSearch.Text).ToUpper);
   if li <> nil then
   begin
     lv.Selected := li;
@@ -592,7 +763,7 @@ begin
       zplSource.Lines.Insert(zmd.LastSelectedLine,'// _END');
     end
     else
-      zplSource.CaretY := Pred(InsertSourceCodeLine(getSourceLine([zmd])));
+      zplSource.CaretY := InsertSourceCodeLine(getSourceLine([zmd]));
   finally
     zmd.Free;
   end;
@@ -619,6 +790,79 @@ begin
   sb.Panels[1].Text := Format('%d dops per mm', [pvDpMM]);
 end;
 
+procedure TmainW.ComputeXandYFieldOrigin(const ALine, xPos, yPos, dpmm: integer);
+var
+  i: integer;
+  subs,org: TStrings;
+  line, subLine, newLine: string;
+  lcUpdate: boolean;
+begin
+  if (xPos = 0) or (yPos = 0) then
+    Exit;
+
+  lcUpdate := False;
+  newLine := '';
+  line := zplSource.Lines[ALine-1];
+  subs := TStringList.Create;
+  try
+    while Length(line) > 0 do
+    begin
+      i := Length(line);
+      while (i >= 1) do
+      begin
+        if not (line[i] = '^') then
+          Dec(i)
+        else
+        begin
+          subs.Insert(0, Copy(line,i,Length(line)-i+1));
+          Delete(line,i,Length(line)-1+1);
+          i := Length(line);
+        end;
+      end;
+      if Length(line) > 0 then
+      begin
+        subs.Insert(0,line);
+        line := '';
+      end;
+    end;
+
+    for i := 0 to subs.Count-1 do
+    begin
+      subLine := subs[i];
+      if Copy(subLine.ToUpper,1,3) = '^FO' then
+      begin
+        Delete(subLine,1,3);
+        org := TStringList.Create;
+        try
+          org.CommaText := subLine;
+          if org.Count = 2 then
+          begin
+            subLine := Format('^FO%.4d,%.4d',[xPos * dpmm,yPos * dpmm]);
+            lcUpdate := true;
+          end;
+        finally
+          org.Free;
+        end;
+      end;
+      newLine := Format('%s%s',[newLine,subLine]);
+    end;
+  finally
+    subs.Free;
+  end;
+  if lcUpdate then
+  begin
+    zplSource.Lines[ALine-1] := newLine;
+    pvChanged := True;
+    labelFileChanged;
+    if zplSource.CaretY > 1 then
+    begin
+      line := zplSource.Lines[ALine-2].ToUpper;
+      if Pos('^FX X=',line) = 1 then
+        zplSource.Lines[ALine-2] := Format('^FX x=%d y=%d ^FS',[xPos,yPos]);
+    end;
+  end;
+end;
+
 procedure TmainW.displayCommands;
 var
   i: integer;
@@ -626,35 +870,38 @@ var
   categ: string;
   id: integer;
 begin
-  lv.Items.BeginUpdate;
-  try
-    categ := '';
-    id := 0;
-    for i := 0 to pvZPLCommands.Count - 1 do
-    begin
-      c := pvZPLCommands[i];
-      { : adds a list group }
-      if c.category <> categ then
+  if Assigned(pvZPLCommands) then
+  begin
+    lv.Items.BeginUpdate;
+    try
+      categ := '';
+      id := 0;
+      for i := 0 to pvZPLCommands.Count - 1 do
       begin
-        Inc(id);
-        categ := c.category;
-        with lv.Groups.Add do
+        c := pvZPLCommands[i];
+        { : adds a list group }
+        if c.category <> categ then
         begin
-          Header := c.category;
+          Inc(id);
+          categ := c.category;
+          with lv.Groups.Add do
+          begin
+            Header := c.category;
+            GroupID := id;
+          end;
+        end;
+
+        with lv.Items.Add do
+        begin
+          Caption := c.name;
+          SubItems.Add(c.shortDesc);
           GroupID := id;
+          Data := Pointer(c);
         end;
       end;
-
-      with lv.Items.Add do
-      begin
-        Caption := c.name;
-        SubItems.Add(c.shortDesc);
-        GroupID := id;
-        Data := Pointer(c);
-      end;
+    finally
+      lv.Items.EndUpdate;
     end;
-  finally
-    lv.Items.EndUpdate;
   end;
 end;
 
@@ -737,7 +984,7 @@ end;
 
 procedure TmainW.DatabaseFieldActionExecute(Sender: TObject);
 begin
-  DatabaseFieldOrLabel('<<'+TextEdit.Text+'>>');
+  DatabaseFieldOrLabel('<<'+string(TextEdit.Text).ToUpper+'>>');
 end;
 
 procedure TmainW.DatabaseFieldOrLabel(AText: string);
@@ -791,10 +1038,7 @@ begin
       zplSource.Lines.EndUpdate;
     end;
     Clipboard.AsText := zplSource.Lines.Text;
-    sb.Panels[1].Text := 'ZPL Keywords list copied to clipboard';
-  end
-  else
-    sb.Panels[1].Text := 'Save the current file or close it';
+  end;
 end;
 
 procedure TmainW.extractZPLFromXML(const filename: string);
@@ -807,7 +1051,9 @@ begin
     labelHeightEdit.Text := IntToStr(zpl.ALabel.height);
     labelDescEdit.Text := zpl.ALabel.name;
     labelPrintOrientationBox.ItemIndex := Ord(zpl.ALabel.orientation);
+    printDensityBox.ItemIndex := printDensityBox.Items.IndexOf(ZPLPrintDensityDesc[getPrintDensity(zpl.ALabel.density)]);
     zplSource.Lines.Assign(zpl.Lines);
+    computesDotsPerMM;
   finally
     zpl.Free;
   end;
@@ -832,75 +1078,19 @@ begin
       mrYes:
         saveFileAction.Execute;
       mrNo:
-        ;
+        pvChanged := False;
       mrCancel:
         Abort;
     end;
   end;
 end;
 
-procedure TmainW.FormCreate(Sender: TObject);
-begin
-  pvLoading := True;
-  Application.OnHint := OnHint;
-  pvChanged := False;
-  pvLabel := TZPLLabel.Create;
-  pvEngine := TZPLCommandEngine.Create(pvLabel);
-  pvLabelChanged := False;
-end;
-
-procedure TmainW.FormDestroy(Sender: TObject);
-var
-  i: integer;
-begin
-  for i := 0 to pvZPLCommands.Count - 1 do
-  begin
-    if Assigned(pvZPLCommands[i]) then
-      TZPLCommand(pvZPLCommands[i]).Free;
-  end;
-  pvZPLCommands.Free;
-
-  for i := 0 to pvZPLLabels.Count - 1 do
-  begin
-    if Assigned(pvZPLLabels[i]) then
-      TZPLLabelSettings(pvZPLLabels[i]).Free;
-  end;
-  pvZPLLabels.Free;
-
-  pvEngine.Free;
-  pvLabel.Free;
-end;
-
-procedure TmainW.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-var
-  k: Char;
-begin
-  if ssCtrl in Shift then
-  begin
-    k := UpCase(Chr(Key));
-    if processChar(k) then
-      Key := 0;
-  end;
-end;
-
-procedure TmainW.FormKeyPress(Sender: TObject; var Key: Char);
-var
-  k: Char;
-begin
-  if (ActiveControl <> cmdSearch) and (ActiveControl <> zplSource) and
-    (ActiveControl <> TextEdit) and (ActiveControl <> labelDescEdit) then
-  begin
-    k := UpCase(Key);
-    if processChar(k) then
-      Key := #0;
-  end;
-end;
-
 procedure TmainW.printDensityBoxChange(Sender: TObject);
 begin
+  if (zplSource.Lines.Count > 0) and (MessageDlg('Faut-il recalculer tous les Field Origin ^FO ?',mtConfirmation,[mbYes,mbNo],0) = mrYes) then
+    RecomputeXandYFieldOrigin(pvDpMM,ZPLPrintDensity[printDensityBox.printDensityValue]);
   computesDotsPerMM;
-  labelChanged;
+  labelFormatChanged;
 end;
 
 function TmainW.processChar(var k: Char): Boolean;
@@ -935,35 +1125,82 @@ begin
   if labelSettingsBox.ItemIndex > -1 then
     labelSettingsBoxChange(Self);
   pvLoading := False;
+  GetGraphicsAction.Execute;
 end;
 
-procedure TmainW.GetGraphics;
+procedure TmainW.getGraphicsFromDisk;
 var
-  i,j,k: integer;
-  line: string;
+  bin,
+  graphics: string;
+  sr: TSearchRec;
 begin
-  GraphicsBox.Items.BeginUpdate;
-  try
-    GraphicsBox.Items.Clear;
-    for i := 0 to zplSource.Lines.Count-1 do
-    begin
-      line := zplSource.Lines[i].ToUpper;
-      j := Pos('~DG',line);
-      if j > 0 then
-      begin
-        k := Pos('.GRF',line);
-        if k > 0 then
-          GraphicsBox.Items.Add(Copy(line,j+3,k-j+1));
-      end;
+  bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  graphics := IncludeTrailingPathDelimiter(Format('%s\%s',[bin,'graphics']));
+  if FindFirst(graphics+'*.grf',faNormal,sr) = 0 then
+  begin
+    try
+      repeat
+        GraphicsBox.Items.Add(sr.Name);
+      until FindNext(sr) > 0;
+    finally
+      FindClose(sr);
     end;
-  finally
-    GraphicsBox.Items.EndUpdate;
+  end;
+end;
+
+function TmainW.getKeywordFromSource(line: string; xPos: integer): string;
+var
+  x: integer;
+  found: boolean;
+begin
+  Result := '';
+  { on retourne la commande (^ ou ~) la plus proche à gauche du point xPos }
+  line := line.Trim;
+  if xPos > Length(line) then
+    xPos := Length(line);
+  x := xPos;
+  found := False;
+  while (x >= 1) and not Found do
+  begin
+    Found := CharInSet(line[x],['^','~']);
+    if found then
+      Break;
+    Dec(x);
+  end;
+  if found then
+    Result := Copy(line,x,3);
+end;
+
+function TmainW.GetZPLCmdListItemFromString(cmd: string): TListItem;
+var
+  i: Integer;
+  found: boolean;
+begin
+  cmd := cmd.Trim.ToUpper;
+  if CharInSet(cmd[1],['^','~']) then
+    Delete(cmd,1,1);
+
+  Result := lv.FindCaption(0, Format('^%s', [cmd.ToUpper]), True, True, False);
+  if not Assigned(Result) then
+  begin
+    for i := 0 to lv.Items.Count - 1 do
+    begin
+      found := Pos(Trim(cmdSearch.Text).ToUpper, lv.Items[i].SubItems[0].ToUpper) > 0;
+      if found then
+        Result := lv.Items[i];
+    end;
   end;
 end;
 
 procedure TmainW.GetGraphicsActionExecute(Sender: TObject);
 begin
-  GetGraphics;
+  GraphicsBox.Items.BeginUpdate;
+  try
+    GraphicsBox.Items.Clear;
+    getGraphicsFromDisk;
+  finally
+    GraphicsBox.Items.EndUpdate;
+  end;
 end;
 
 procedure TmainW.groupZPLCommandsActionExecute(Sender: TObject);
@@ -972,7 +1209,14 @@ begin
   lv.GroupView := pvZPLCommandsGroup;
 end;
 
-procedure TmainW.labelChanged;
+procedure TmainW.labelFileChanged;
+const
+  cs: array[Boolean] of string = ('','(*)');
+begin
+  sb.Panels[4].Text := Format('%s %s',[pvFilename,cs[pvChanged]]);
+end;
+
+procedure TmainW.labelFormatChanged;
 begin
   if not pvLoading then
   begin
@@ -988,7 +1232,7 @@ end;
 
 procedure TmainW.labelPrintOrientationBoxChange(Sender: TObject);
 begin
-  labelChanged;
+  labelFormatChanged;
 end;
 
 procedure TmainW.labelSettingsBoxChange(Sender: TObject);
@@ -1006,19 +1250,67 @@ begin
     labelDescEdit.Text := lbl.name;
     labelDescEdit.Modified := False;
     labelPrintOrientationBox.ItemIndex := Ord(lbl.orientation);
-    labelChanged;
+    labelFormatChanged;
   end;
 end;
 
 procedure TmainW.labelWidthEditChange(Sender: TObject);
 begin
   if TEdit(Sender).Text <> '' then
-    labelChanged;
+    labelFormatChanged;
+end;
+
+procedure TmainW.LineLengthKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (CharInSet(Key,['0'..'9',FormatSettings.DecimalSeparator,#8,#13])) then
+    Key := #0;
+end;
+
+procedure TmainW.loadBlankPDF;
+var
+  bin,
+  labelary: string;
+begin
+  bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  labelary := Format('%s\%s',[bin,WEB_SERVICE_FILE]);
+  if Assigned(pvPdf) then
+    pvPdf.LoadFromFile(Format('%s\blank.pdf',[labelary]));
+end;
+
+procedure TmainW.DrawALine(lineOrientation: TLineOrientation);
+var
+  zo: TZPLLineOrigin;
+  zmd: TZPLLine;
+begin
+  zmd := nil;
+  zo := TZPLLineOrigin(pvEngine.getZPLCommandValueObject(zmdLineOrigin));
+  try
+    zo.X := xTextPos.Value;
+    zo.Y := yTextPos.Value;
+    zo.dpi := ZPLPrintDensity[pvLabel.Density];
+    zo.Comment := commentsFieldOriginBox.Checked;
+    case lineOrientation of
+      loHorz: zmd := TZPLHorzLine(pvEngine.getZPLCommandValueObject(zmdHorzLine));
+      loVert: zmd := TZPLVertLine(pvEngine.getZPLCommandValueObject(zmdVertLine));
+    end;
+
+    zo.Line := zmd;
+    zmd.LineOrientation := lineOrientation;
+    zmd.LengthMM := StrToFloat(LineLength.Text);
+    zmd.ThickMM := StrToFloat(LineThick.Text);
+    zmd.DotPerMM := zo.dpi;
+    zplSource.CaretY := Succ(InsertSourceCodeLine(getSourceLine([zo, zmd])));
+    zplSourceChange(Self);
+  finally
+    zo.Free;
+    zmd.Free;
+  end;
 end;
 
 procedure TmainW.loadMainToolbar;
 var
   i: integer;
+  bin,xml: string;
 begin
   for i := Ord(Low(ZPLPrintDensityDesc)) to Ord(High(ZPLPrintDensityDesc)) do
     printDensityBox.Items.Add(ZPLPrintDensityDesc[TPrintDensity(i)]);
@@ -1026,22 +1318,17 @@ begin
     labelPrintOrientationBox.Items.Add
       (ZPLPrintOrientation[TPrintOrientation(i)]);
 
-  with TXMLToView.Create do
+  bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  xml := Format('%s\xml\zpAELabels.xml', [bin]);
+  if FileExists(xml) then
+    pvZPLLabels := TXMLToView.xmlZPLLabelsToObjectList(xml);
+  if Assigned(pvZPLLabels) then
   begin
-    try
-      pvZPLLabels := xmlZPLLabelsToObjectList
-        (Format('%s\%s',
-        [ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)),
-        'zpAELabels.xml']));
-    finally
-      Free;
+    for i := 0 to pvZPLLabels.Count - 1 do
+    begin
+      labelSettingsBox.Items.AddObject(Format('%s', [pvZPLLabels[i].Caption]),
+        pvZPLLabels[i]);
     end;
-  end;
-
-  for i := 0 to pvZPLLabels.Count - 1 do
-  begin
-    labelSettingsBox.Items.AddObject(Format('%s', [pvZPLLabels[i].Caption]),
-      pvZPLLabels[i]);
   end;
 
   for i := Ord(Low(ZPLFontSize)) to Ord(High(ZPLFontSize)) do
@@ -1055,8 +1342,13 @@ begin
 end;
 
 procedure TmainW.loadSettings;
+var
+  bin,
+  ini: string;
 begin
-  with TInifile.Create(ChangeFileExt(Application.ExeName, '.ini')) do
+  bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  ini := Format('%s\ini\%s',[bin,ChangeFileExt(ExtractFileName(Application.ExeName),'.ini')]);
+  with TInifile.Create(ini) do
   begin
     try
       Left := ReadInteger(Self.name, 'Left', Self.Left);
@@ -1103,33 +1395,29 @@ begin
 end;
 
 procedure TmainW.loadZPLCommands;
+var
+  bin,xml: string;
 begin
-  with TXMLToView.Create do
-  begin
-    try
-      pvZPLCommands := xmlZPLCommandsToObjectList
-        (Format('%s\%s',
-        [ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)),
-        'zpHelp.xml']));
-    finally
-      Free;
-    end;
-  end;
+  bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  xml := Format('%s\xml\zpHelp.xml', [bin]);
+  pvZPLCommands := nil;
+  if FileExists(xml) then
+    pvZPLCommands := TXMLToView.xmlZPLCommandsToObjectList(xml)
+  else
+    cmdSearch.Text := Format('Le fichier %s n''existe pas !',[xml]);
 end;
 
 procedure TmainW.lvChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
-  if Assigned(Item.Data) then
-  begin
+  if Assigned(Item) and Assigned(Item.Data) then
     displayHelp(TZPLCommand(Item.Data));
-    // TextEdit.Text := TZPLCommand(Item.Data).usage;
-  end;
 end;
 
 procedure TmainW.lvDblClick(Sender: TObject);
 begin
-  TextEdit.Text := TZPLCommand(lv.Selected.Data).usage;
+  if Assigned(lv.Selected) and Assigned(lv.Selected.Data) then
+    TextEdit.Text := TZPLCommand(lv.Selected.Data).usage;
 end;
 
 procedure TmainW.lvKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -1145,14 +1433,21 @@ begin
   end;
 end;
 
+procedure TmainW.mruMenuClick(Sender: TObject; const Filename: string);
+begin
+  if openFileAction.Enabled then
+    openLabel(Filename);
+end;
+
 procedure TmainW.OnHint(Sender: TObject);
 begin
-  sb.Panels[1].Text := Application.Hint;
+  sb.Panels[0].Text := Application.Hint;
 end;
 
 procedure TmainW.openFileActionExecute(Sender: TObject);
 var
   response: integer;
+  bin: string;
 begin
   if pvChanged then
   begin
@@ -1172,6 +1467,8 @@ begin
     try
       Filter := 'ZPL File (*.zpl,*.zplx)|*.zpl;*.zplx|All files (*.*)|*.*';
       FilterIndex := 1;
+      bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+      InitialDir := Format('%s\etik', [bin]);
       if Execute then
         openLabel(filename);
     finally
@@ -1194,6 +1491,9 @@ begin
   pvFilename := filename;
   zplSource.Update;
   GetGraphicsAction.Execute;
+  labelFileChanged;
+  sb.Panels[2].Text := Format('%d/%d',[zplSource.CaretY,zplSource.CaretX]);
+  mru.AddFile(filename);
 end;
 
 procedure TmainW.QuitActionExecute(Sender: TObject);
@@ -1201,73 +1501,131 @@ begin
   Close;
 end;
 
-procedure TmainW.saveFileActionExecute(Sender: TObject);
+procedure TmainW.RecomputeXandYFieldOrigin(currentDpMM,newDpMM: integer);
 var
-  z: TZPLLabel;
+  zcmd: string;
+  li: TListItem;
+  i: Integer;
 begin
-  with TSaveDialog.Create(Self) do
+  if (currentDpMM > 0) and (newDpMM > 0) and (currentDpMM <> newDpMM) then
   begin
+    zplSource.Lines.BeginUpdate;
     try
-      if FileExists(pvFilename) then
-        filename := pvFilename;
-      Filter := 'ZPL File (*.zplx)|*.zplx|All files (*.*)|*.*';
-      FilterIndex := 1;
-      Options := [ofHideReadOnly];
-      if Execute then
+      Screen.Cursor := crHourglass;
+      for i := 1 to zplSource.Lines.Count do
       begin
-        z := TZPLLabel.Create;
-        try
-          z.LabelName := Self.labelDescEdit.Text;
-          z.Density := Self.printDensityBox.printDensityValue;
-          z.PrintOrientation := Self.labelPrintOrientationBox.
-            printOrientationValue;
-          z.Width := string(Self.labelWidthEdit.Text).toInteger;
-          z.Height := string(Self.labelHeightEdit.Text).toInteger;
-          z.Lines := Self.zplSource.Lines;
-          z.SaveToFile(ChangeFileExt(filename, '.zplx'));
-        finally
-          z.Free;
+        zcmd := getKeywordFromSource(zplSource.Lines[i-1],1);
+        if zcmd <> '' then
+        begin
+          li := GetZPLCmdListItemFromString(zcmd);
+          if Assigned(li) and (TZPLCommand(li.Data).name = '^FO') then
+          begin
+            { set xTextPos and yTextPos values according to ^FOxxx,yyy }
+            setXandYTextPosFromSource(zplSource.Lines[i-1].ToUpper,currentDpMM);
+            ComputeXandYFieldOrigin(i,xTextPos.Value,yTextPos.Value,newDpMM);
+          end;
         end;
       end;
     finally
-      Free;
+      zplSource.Lines.EndUpdate;
+      Screen.Cursor := crDefault;
     end;
   end;
-  pvChanged := False;
+end;
+
+procedure TmainW.rotateActionExecute(Sender: TObject);
+begin
+  if pvPdf.Rotation < High(TPdfPageRotation) then
+    pvPdf.Rotation := Succ(pvPdf.Rotation)
+  else
+    pvPdf.Rotation := prNormal;
+end;
+
+procedure TmainW.SaveAsFileActionExecute(Sender: TObject);
+begin
+  pvFilename := '';
+  saveLabel;
+end;
+
+procedure TmainW.saveFileActionExecute(Sender: TObject);
+begin
+  saveLabel;
 end;
 
 procedure TmainW.saveLabel;
+var
+  z: TZPLLabel;
 begin
+  if not pvChanged then Exit;
+
+  if pvFilename.Trim = '' then
+  begin
+    with TSaveDialog.Create(Self) do
+    begin
+      try
+        Filter := 'ZPL File (*.zplx)|*.zplx|All files (*.*)|*.*';
+        FilterIndex := 1;
+        Options := [ofHideReadOnly];
+        if Execute then
+          pvFilename := Filename;
+      finally
+        Free;
+      end;
+    end;
+  end;
+
+  if pvFilename.Trim <> '' then
+  begin
+    z := TZPLLabel.Create;
+    try
+      z.LabelName := Self.labelDescEdit.Text;
+      z.Density := Self.printDensityBox.printDensityValue;
+      z.PrintOrientation := Self.labelPrintOrientationBox.
+        printOrientationValue;
+      z.Width := string(Self.labelWidthEdit.Text).toInteger;
+      z.Height := string(Self.labelHeightEdit.Text).toInteger;
+      z.Lines := Self.zplSource.Lines;
+      z.SaveToFile(ChangeFileExt(pvFilename, '.zplx'));
+    finally
+      z.Free;
+    end;
+    pvChanged := False;
+    labelFileChanged;
+  end;
 end;
 
 procedure TmainW.saveLabelActionExecute(Sender: TObject);
 var
   lbl: TZPLLabelSettings;
+  bin,
+  xml: string;
 begin
-  lbl := nil;
-  with TXMLToView.Create do
-  begin
-    try
-      lbl := TZPLLabelSettings.Create;
-      lbl.name := labelDescEdit.Text;
-      lbl.Width := string(labelWidthEdit.Text).toInteger;
-      lbl.Height := string(labelHeightEdit.Text).toInteger;
-      lbl.orientation := labelPrintOrientationBox.printOrientationValue;
-      xmlSaveLabelSettings(lbl, Format('%s\%s',
-        [ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)),
-        'zpAELabels.xml']));
-      labelSettingsBox.Items.AddObject(lbl.Caption, lbl);
-      pvLabelChanged := False;
-    finally
-      lbl.Free;
-      Free;
-    end;
+  lbl := TZPLLabelSettings.Create;
+  try
+    lbl.name := labelDescEdit.Text;
+    lbl.Width := string(labelWidthEdit.Text).toInteger;
+    lbl.Height := string(labelHeightEdit.Text).toInteger;
+    lbl.orientation := labelPrintOrientationBox.printOrientationValue;
+    bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+    xml := Format('%s\xml\zpAELabels.xml', [bin]);
+    TXMLToView.xmlSaveLabelSettings(lbl, xml);
+    labelSettingsBox.Items.AddObject(lbl.Caption, lbl);
+    pvLabelChanged := False;
+  finally
+    lbl.Free;
   end;
 end;
 
 procedure TmainW.saveSettings;
+var
+  bin,
+  ini: string;
 begin
-  with TInifile.Create(ChangeFileExt(Application.ExeName, '.ini')) do
+  bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  ini := Format('%s\ini',[bin]);
+  ForceDirectories(ini);
+  ini := Format('%s\%s',[ini,ChangeFileExt(ExtractFileName(Application.ExeName),'.ini')]);
+  with TInifile.Create(ini) do
   begin
     try
       WriteInteger('actions', groupZPLCommandsAction.name,
@@ -1309,6 +1667,7 @@ var
 begin
   zplSource.Lines.Clear;
   pvChanged := False;
+  labelFileChanged;
   pvLabel.LabelName := labelDescEdit.Text;
   pvLabel.Density := printDensityBox.printDensityValue;
   pvLabel.PrintOrientation := labelPrintOrientationBox.printOrientationValue;
@@ -1335,6 +1694,16 @@ begin
   fsv := TComboBox(Sender).FontSizeValue;
   FontWidthEdit.Text := fsv.Width.ToString;
   FontHeightEdit.Text := fsv.Height.ToString;
+end;
+
+procedure TmainW.UpdateFieldOriginActionExecute(Sender: TObject);
+begin
+  ComputeXandYFieldOrigin(zplSource.CaretY,xTextPos.Value,yTextPos.Value,pvDpMM);
+end;
+
+procedure TmainW.VerticalLineActionExecute(Sender: TObject);
+begin
+  DrawALine(loVert);
 end;
 
 procedure TmainW.viewActionsUpdate(Action: TBasicAction; var Handled: Boolean);
@@ -1366,6 +1735,8 @@ begin
 end;
 
 procedure TmainW.ZPLActionsUpdate(Action: TBasicAction; var Handled: Boolean);
+var
+  t: double;
 begin
   StartLabelAction.Enabled := not pvChanged;
   CommandAction.Enabled := (lv.Selected <> nil) and (lv.Selected.Data <> nil);
@@ -1373,6 +1744,9 @@ begin
   DatabaseFieldAction.Enabled := LabelDatabaseFieldAction.Enabled;
   GetGraphicsAction.Enabled := zplSource.Lines.Count > 0;
   GraphicAction.Enabled := GraphicsBox.Text <> '';
+  UpdateFieldOriginAction.Enabled := (zplSource.Lines.Count > 0) and (Pos('^FO',zplSource.Lines[zplSource.CaretY-1].ToUpper) > 0);
+  HorizontalLineAction.Enabled := (xTextPos.Value > 0) and (yTextPos.Value > 0) and (TryStrToFloat(LineLength.Text,t)) and (TryStrToFloat(LineThick.Text,t));
+  VerticalLineAction.Enabled := HorizontalLineAction.Enabled;
   Handled := True;
 end;
 
@@ -1380,11 +1754,68 @@ procedure TmainW.zplSourceChange(Sender: TObject);
 begin
   pvChanged := True;
   sb.Panels[2].Text := Format('%d/%d',[zplSource.CaretY,zplSource.CaretX]);
+  labelFileChanged;
 end;
 
 procedure TmainW.zplSourceClick(Sender: TObject);
+var
+  zcmd: string;
+  li: TListItem;
 begin
   sb.Panels[2].Text := Format('%d/%d',[zplSource.CaretY,zplSource.CaretX]);
+  zcmd := getKeywordFromSource(zplSource.Lines[zplSource.CaretY-1],zplSource.CaretX);
+  if zcmd <> '' then
+  begin
+    li := GetZPLCmdListItemFromString(zcmd);
+    if Assigned(li) then
+    begin
+      displayHelp(TZPLCommand(li.Data));
+
+      if TZPLCommand(li.Data).name = '^FO' then
+      begin
+        { set xTextPos and yTextPos values according to ^FOxxx,yyy }
+        setXandYTextPosFromSource(zplSource.Lines[zplSource.CaretY-1].ToUpper, pvDpMM);
+      end;
+    end;
+  end;
+end;
+
+procedure TmainW.setXandYTextPosFromSource(Line: string; const dpmm: integer);
+var
+  i,wx,wy: integer;
+  isNumber: Boolean;
+begin
+  wx := 0; wy := 0;
+  i := Pos('^FO',Line);
+  if i > 0 then
+  begin
+    { delete from line begin to ^FO included }
+    Delete(Line,1,i+2);
+    i := Pos(',',Line);
+    if i > 0 then
+    begin
+      wx := StrToIntDef(Trim(Copy(Line,1,Pred(i))),0);
+      Delete(Line,1,i);
+
+      IsNumber := False;
+      i := 0;
+      while i < Length(Line) do
+      begin
+        Inc(i);
+        if CharInSet(Line[i],['0'..'9']) then
+          IsNumber := True
+        else
+          break;
+      end;
+      if isNumber then
+        wy := StrToIntDef(Trim(Copy(Line,1,Pred(i))),0);
+    end;
+
+    if wx > 0 then
+      xTextPos.Value := wx div dpmm;
+    if wy > 0 then
+      yTextPos.Value := wy div dpmm;
+  end;
 end;
 
 procedure TmainW.zplSourceKeyPress(Sender: TObject; var Key: Char);
@@ -1402,6 +1833,56 @@ end;
 function TmainW.getSourceLine(zmd: array of TZPLCommand): string;
 begin
   Result := pvEngine.get(zmd);
+end;
+
+procedure TmainW.PreviewLabelActionExecute(Sender: TObject);
+begin
+  try PreviewLabel; except end;
+end;
+
+procedure TmainW.PreviewLabel;
+var
+  input,
+  output,
+  bin,
+  labelary: string;
+  fs: TStreamWriter;
+  labelWidth,
+  labelHeight: double;
+begin
+  bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+  loadBlankPDF;
+  labelary := Format('%s\%s',[bin,WEB_SERVICE_FILE]);
+  input := Format('%s\%s.zpl',[labelary,WEB_SERVICE_FILE]);
+  output := Format('%s\%s.pdf',[labelary,WEB_SERVICE_FILE]);
+  if FileExists(input) then DeleteFile(input);
+  if FileExists(output) then DeleteFile(output);
+  ForceDirectories(labelary);
+  fs := TStreamWriter.Create(input,False,TEncoding.UTF8);
+  try
+    fs.Write(Trim(zplSource.Lines.Text));
+  finally
+    fs.Free;
+  end;
+
+  labelWidth := StrToInt(labelWidthEdit.Text) / 25.4;
+  labelHeight := StrToInt(labelHeightEdit.Text) / 25.4;
+  previewPanel.Visible := GetLabelFromLabelaryService(input,output,Format('%ddpmm',[pvDpMM]),Format('%.2fx%.2f',[labelWidth,LabelHeight]),olPdf);
+  if previewPanel.Visible then
+  begin
+    if not Assigned(pvPdf) then
+    begin
+      pvPDF := TPdfControl.Create(Self);
+      pvPDF.Parent := pdfpanel;
+      pvPDF.Align := alClient;
+      pvPDF.SendToBack; // put the control behind the buttons
+      pvPDF.Color := clGray;
+      pvPDF.ScaleMode := smZoom;
+      pvPDF.PageColor := RGB(255, 255, 200);
+    end;
+    pvPdf.LoadFromFile(output);
+//    ShellExecute(Application.Handle,'open',PChar(output),nil,nil,sw_normal);
+  end;
 end;
 
 { TZPLCommandEngine }
@@ -1510,6 +1991,12 @@ begin
       Result := TZPLGraphic;
     zmdFieldOrientation:
       Result := TZPLFieldOrientation;
+    zmdHorzLine:
+      Result := TZPLHorzLine;
+    zmdVertLine:
+      Result := TZPLVertLine;
+    zmdLineOrigin:
+      Result := TZPLLineOrigin;
   else
     Result := TZPLCommand;
   end
@@ -1532,7 +2019,7 @@ end;
 
 function TZPLBlocCommentCmd.getStrCmd: string;
 begin
-  Result := '// _START' + #13#10 + #13#10 + '// _END';
+  Result := '// _START' + #13#10 + '// _END';
 end;
 
 function TZPLLineCommentCmd.getStrCmd: string;
@@ -1556,20 +2043,6 @@ function TZPLEOLCmd.getStrCmd: string;
 begin
   Result := '^FS';
 end;
-
-//{ TZPLAlignment }
-//
-//function TZPLAlignment.getStrCmd: string;
-//const
-//  al: array[TAlignment] of string = ('0','1');
-//begin
-//  Result := Format('^FW R,%s',[al[FAlignment]]);
-//end;
-//
-//procedure TZPLAlignment.SetAlignment(const Value: TAlignment);
-//begin
-//  FAlignment := Value;
-//end;
 
 { TZPLFont }
 
@@ -1631,7 +2104,9 @@ function TZPLPrintOrientation.getStrCmd: string;
 const
   po: array[TPrintOrientation] of string = ('N','I');
 begin
-  Result := Format('^PO%s',[po[PrintOrientation]]);
+  Result := '';
+  if PrintOrientation > poNormal then
+    Result := Format('^PO%s',[po[PrintOrientation]]);
 end;
 
 procedure TZPLPrintOrientation.SetPrintOrientation(
@@ -1644,7 +2119,7 @@ end;
 
 function TZPLGraphic.getStrCmd: string;
 begin
-  Result := Format('^XG%s,1,1^FS',[Text]);
+  Result := Format('^XGR:%s,1,1^FS',[Text]);
 end;
 
 { TZPLBarCode }
@@ -1667,7 +2142,9 @@ function TZPLFieldOrientation.getStrCmd: string;
 const
   al: array[TFieldOrientation] of string = ('N','R','I','B');
 begin
-  Result := Format('^FW%s,%s',[al[FFieldOrientation], Ord(FJustify).ToString]);
+  Result := '';
+  if (FFieldOrientation > foNormal) or (FJustify > tjLeft) then
+    Result := Format('^FW%s,%s',[al[FFieldOrientation], Ord(FJustify).ToString]);
 end;
 
 procedure TZPLFieldOrientation.SetFieldOrientation(
@@ -1679,6 +2156,71 @@ end;
 procedure TZPLFieldOrientation.SetJustify(const Value: TTextJustify);
 begin
   FJustify := Value;
+end;
+
+{ TZPLLine }
+
+function TZPLLine.getStrCmd: string;
+var
+  t: integer;
+begin
+  t := Trunc(FThick * FDotPerMM);
+  case FLineOrientation of
+    loHorz:
+      Result := Format('^GB%d,%d,%d,B',[Trunc(FLength*FDotPerMM),t,t]);
+    loVert:
+      Result := Format('^GB%d,%d,%d,B',[t,Trunc(FLength*FDotPerMM),t]);
+  end;
+end;
+
+procedure TZPLLine.SetDotPerMM(const Value: integer);
+begin
+  FDotPerMM := Value;
+end;
+
+procedure TZPLLine.SetLength(const Value: double);
+begin
+  FLength := Value;
+end;
+
+procedure TZPLLine.SetLineOrientation(const Value: TLineOrientation);
+begin
+  FLineOrientation := Value;
+end;
+
+procedure TZPLLine.SetThick(const Value: double);
+begin
+  FThick := Value;
+end;
+
+{ TZPLHorzLine }
+
+constructor TZPLHorzLine.Create;
+begin
+  FLineOrientation := loHorz;
+end;
+
+{ TZPLVertLine }
+
+constructor TZPLVertLine.Create;
+begin
+  FLineOrientation := loVert;
+end;
+
+{ TZPLLineOrigin }
+
+function TZPLLineOrigin.getStrCmd: string;
+begin
+  if Comment then
+  begin
+    Result := Format('^FX x=%d, y=%d, w=%f, t=%f ^FS',[X, Y, FLine.LengthMM, FLine.ThickMM])+#13#10;
+  end;
+  Result := Format('%s^FO%.4d,%.4d',[Result,FX*dpi,FY*dpi]);
+end;
+
+procedure TZPLLineOrigin.SetLine(const Value: TZPLLine);
+begin
+  FLine := Value;
 end;
 
 end.

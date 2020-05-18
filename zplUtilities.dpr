@@ -1,13 +1,18 @@
 program zplUtilities;
 
 uses
+  madExcept,
+  madLinkDisAsm,
+  madListHardware,
+  madListProcesses,
+  madListModules,
   Vcl.Forms,
   mainWindow in 'mainWindow.pas' {mainW},
   unitXml in 'unitXml.pas',
   Vcl.Themes,
   Vcl.Styles,
   zplUtils in 'zplUtils.pas',
-  VCLPatches in '..\..\..\..\vcl\src\lib\VCLPatches.pas';
+  previewLabelUnit in 'previewLabelUnit.pas';
 
 {$R *.res}
 

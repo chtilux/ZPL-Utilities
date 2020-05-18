@@ -60,6 +60,7 @@ type
     width,
     height: integer;
     orientation: TPrintOrientation;
+    density: integer;
     property Caption: string read getCaption;
   end;
 
@@ -80,6 +81,7 @@ type
   TPrintDensity = (pi152,pi203,pi300,pi600);
   TFieldOrientation = (foNormal,foRotated90,foInverted180,foBottomUp270);
   TTextJustify = (tjLeft,tjRight);
+  TLineOrientation = (loHorz, loVert);
 
   TComboBoxHelper = class helper for TComboBox
   public
@@ -115,7 +117,6 @@ type
     FVersion: string;
     procedure SetDensity(const Value: TPrintDensity);
     procedure SetPrintOrientation(const Value: TPrintOrientation);
-    procedure SetDefAlignment(const Value: TAlignment);
     procedure SetDefFontSize(const Value: TFontSize);
     procedure SetLabelName(const Value: string);
     procedure SetHeight(const Value: integer);
@@ -124,8 +125,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-//    procedure Assign(Source: TPersistent); override;
-    procedure LoadFromFile(const filename: string);
+//    procedure LoadFromFile(const filename: string);
     procedure SaveToFile(const filename: string);
     property LabelName: string read FLabelName write SetLabelName;
     property Density: TPrintDensity read FDensity write SetDensity default pi300;
@@ -149,6 +149,7 @@ const
   ZPLFieldOrientation: array[TFieldOrientation] of string = ('Normal','Rotated 90°','Inverted 180°','Bottom-Up 270°');
 
   function GetFontSizeValue(Size: TFontSize): TFontSizeValue;
+  function getPrintDensity(Value: integer): TPrintDensity;
 
 implementation
 
@@ -158,8 +159,8 @@ uses
 const
   ZPLFontSizeValues: array[TFontSize] of  TFontSizeValue = ((Width:10;Height:10),
                                                             (Width:20;Height:20),
-                                                            (Width:30;Height:30),
-                                                            (Width:50;Height:50),
+                                                            (Width:40;Height:40),
+                                                            (Width:60;Height:60),
                                                             (Width:0;Height:0));
 
 function GetFontSizeValue(Size: TFontSize): TFontSizeValue;
@@ -167,6 +168,17 @@ begin
   Result := ZPLFontSizeValues[Size];
 end;
 
+function getPrintDensity(Value: integer): TPrintDensity;
+begin
+  case Value of
+     6: Result := pi152;
+     8: Result := pi203;
+    12: Result := pi300;
+    24: Result := pi600;
+    else
+      Result := pi300;
+  end;
+end;
 { TComboBoxHelper }
 
 function TComboBoxHelper.AlignmentValue: TAlignment;
@@ -305,11 +317,11 @@ begin
   inherited;
 end;
 
-procedure TZPLLabel.LoadFromFile(const filename: string);
-begin
-
-end;
-
+//procedure TZPLLabel.LoadFromFile(const filename: string);
+//begin
+//
+//end;
+//
 procedure TZPLLabel.SaveToFile(const filename: string);
 begin
   with TXMLToView.Create do
@@ -320,11 +332,6 @@ begin
       Free;
     end;
   end;
-end;
-
-procedure TZPLLabel.SetDefAlignment(const Value: TAlignment);
-begin
-  FDefAlignment := Value;
 end;
 
 procedure TZPLLabel.SetDefFontSize(const Value: TFontSize);
