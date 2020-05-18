@@ -10,4 +10,4 @@ To run, the program needs :
 
 Versions
 0.2.1	15.05.2020	First release
-      18.05.2020	Update field origin per line or recomputes when print density changes. Draw horizontal and vertical lines.
+      18.05.2020	Update field origin per line or recomputes when print density changes. Draw horizontal, vertical lines and boxes.
