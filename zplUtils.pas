@@ -81,7 +81,7 @@ type
   TPrintDensity = (pi152,pi203,pi300,pi600);
   TFieldOrientation = (foNormal,foRotated90,foInverted180,foBottomUp270);
   TTextJustify = (tjLeft,tjRight);
-  TLineOrientation = (loHorz, loVert);
+  TLineOrientation = (loHorz, loVert, loBox);
 
   TComboBoxHelper = class helper for TComboBox
   public

@@ -367,12 +367,13 @@ object mainW: TmainW
       TabOrder = 1
       object HelpSplitter: TSplitter
         Left = 1
-        Top = 273
+        Top = 398
         Width = 923
         Height = 3
         Cursor = crVSplit
         Align = alTop
         ExplicitLeft = -4
+        ExplicitTop = 273
         ExplicitWidth = 924
       end
       object helpPanel: TPanel
@@ -498,13 +499,15 @@ object mainW: TmainW
       end
       object cmdPanel: TPanel
         Left = 1
-        Top = 276
+        Top = 273
         Width = 923
-        Height = 120
+        Height = 125
         Align = alTop
         ParentShowHint = False
         ShowHint = True
         TabOrder = 1
+        ExplicitLeft = 38
+        ExplicitTop = 196
         object Label14: TLabel
           Left = 22
           Top = 63
@@ -564,12 +567,12 @@ object mainW: TmainW
           ParentFont = False
         end
         object Label6: TLabel
-          Left = 463
+          Left = 394
           Top = 84
-          Width = 26
+          Width = 56
           Height = 13
           Alignment = taRightJustify
-          Caption = 'Line :'
+          Caption = 'Line/Rect. :'
         end
         object xTextPos: TSpinEdit
           Left = 80
@@ -741,24 +744,28 @@ object mainW: TmainW
           Action = UpdateFieldOriginAction
           TabOrder = 18
         end
-        object LineLength: TEdit
-          Left = 495
+        object LineLength: TNumberEdit
+          Left = 456
           Top = 81
           Width = 40
           Height = 21
           Hint = 'Line length in mm'
+          CurrencyString = #8364
+          Alignment = taRightJustify
           TabOrder = 19
-          Text = '0'
+          TextHint = 'Line length in mm'
           OnKeyPress = LineLengthKeyPress
         end
-        object LineThick: TEdit
-          Left = 538
+        object LineThick: TNumberEdit
+          Left = 499
           Top = 81
           Width = 40
           Height = 21
           Hint = 'Line thick in mm'
+          CurrencyString = #8364
+          Alignment = taRightJustify
           TabOrder = 20
-          Text = '0'
+          TextHint = 'Line thick in mm'
           OnKeyPress = LineLengthKeyPress
         end
         object Button1: TButton
@@ -777,26 +784,48 @@ object mainW: TmainW
           Action = VerticalLineAction
           TabOrder = 22
         end
+        object RectHeight: TNumberEdit
+          Left = 542
+          Top = 81
+          Width = 40
+          Height = 21
+          Hint = 'Rectangle height in mm'
+          CurrencyString = #8364
+          Alignment = taRightJustify
+          TabOrder = 23
+          TextHint = 'Rectangle height in mm'
+          OnKeyPress = LineLengthKeyPress
+        end
+        object Button5: TButton
+          Left = 584
+          Top = 101
+          Width = 154
+          Height = 19
+          Action = BoxAction
+          TabOrder = 24
+        end
       end
       object codePanel: TPanel
         Left = 1
-        Top = 396
+        Top = 401
         Width = 923
-        Height = 367
+        Height = 362
         Align = alClient
         BorderWidth = 10
         TabOrder = 2
+        ExplicitTop = 396
+        ExplicitHeight = 367
         DesignSize = (
           923
-          367)
+          362)
         object zplSource: TSynEdit
           Left = 3
           Top = 4
           Width = 914
-          Height = 357
+          Height = 352
           Anchors = [akLeft, akTop, akRight, akBottom]
-          Color = 11592692
-          ActiveLineColor = 8454143
+          Color = 14020857
+          ActiveLineColor = 11468718
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -826,6 +855,7 @@ object mainW: TmainW
           Options = [eoAutoIndent, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoKeepCaretX, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
           OnChange = zplSourceChange
           FontSmoothing = fsmNone
+          ExplicitHeight = 357
         end
       end
     end
@@ -966,7 +996,7 @@ object mainW: TmainW
     Left = 968
     Top = 128
     Bitmap = {
-      494C01010E001800480010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010E001800500010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1505,7 +1535,7 @@ object mainW: TmainW
     Left = 992
     Top = 208
     Bitmap = {
-      494C01010E001800480010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010E001800500010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       00000000000000000000000000000000000000000000FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
@@ -2179,6 +2209,10 @@ object mainW: TmainW
     object VerticalLineAction: TAction
       Caption = 'Vertical line'
       OnExecute = VerticalLineActionExecute
+    end
+    object BoxAction: TAction
+      Caption = 'Rectangle/Box'
+      OnExecute = BoxActionExecute
     end
   end
   object SynZPLSyn1: TSynZPLSyn

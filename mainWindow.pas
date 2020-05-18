@@ -9,13 +9,13 @@ uses
   System.Actions, Vcl.ActnList, Vcl.Menus, Vcl.ImgList,
   Vcl.ToolWin, Generics.Collections, Vcl.StdCtrls, Vcl.Samples.Spin,
   Vcl.Buttons, zplUtils, SynEdit, SynEditHighlighter, SynHighlighterZPL,
-  PdfiumCtrl, MruUnit;
+  PdfiumCtrl, MruUnit, NumberEdit;
 
 type
   TZPLCmd = (zmdStartLabel, zmdEndlabel, zmdTextData, zmdLineComment,
              zmdBlocComment, zmdLogo, zmdBarCode, zmdCode, zmdEOL,
              zmdFont, zmdOrigin, zmdPrintOrientation, zmdFieldOrientation,
-             zmdGraphic, zmdHorzLine, zmdVertLine, zmdLineOrigin);
+             zmdGraphic, zmdHorzLine, zmdVertLine, zmdBox, zmdLineOrigin);
 
 
   TZPLCommandEngine = class;
@@ -166,12 +166,15 @@ type
     UpdateFieldOriginAction: TAction;
     Button12: TButton;
     HorizontalLineAction: TAction;
-    LineLength: TEdit;
-    LineThick: TEdit;
+    LineLength: TNumberEdit;
+    LineThick: TNumberEdit;
     Label6: TLabel;
     Button1: TButton;
     VerticalLineAction: TAction;
     Button2: TButton;
+    RectHeight: TNumberEdit;
+    BoxAction: TAction;
+    Button5: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -226,6 +229,7 @@ type
     procedure HorizontalLineActionExecute(Sender: TObject);
     procedure LineLengthKeyPress(Sender: TObject; var Key: Char);
     procedure VerticalLineActionExecute(Sender: TObject);
+    procedure BoxActionExecute(Sender: TObject);
 
   private
     { Déclarations privées }
@@ -272,6 +276,7 @@ type
     procedure PreviewLabel;
     procedure loadBlankPDF;
     procedure DrawALine(lineOrientation: TLineOrientation);
+    procedure DrawABox;
   public
     { Déclarations publiques }
   end;
@@ -420,26 +425,34 @@ type
     FLength: double;
     FThick: double;
     FDotPerMM: integer;
+    FHeight: double;
     procedure SetLength(const Value: double);
     procedure SetThick(const Value: double);
     procedure SetDotPerMM(const Value: integer);
     procedure SetLineOrientation(const Value: TLineOrientation);
+    procedure SetHeight(const Value: double);
   public
     function getStrCmd: string; override;
     property LineOrientation: TLineOrientation read FLineOrientation write SetLineOrientation;
     property LengthMM: double read FLength write SetLength;
     property ThickMM: double read FThick write SetThick;
     property DotPerMM: integer read FDotPerMM write SetDotPerMM;
+    property HeightMM: double read FHeight write SetHeight;
   end;
 
   TZPLHorzLine = class(TZPLLine)
   public
-    constructor Create;
+    constructor Create; override;
   end;
 
   TZPLVertLine = class(TZPLLine)
   public
-    constructor Create;
+    constructor Create; override;
+  end;
+
+  TZPLBox = class(TZPLLine)
+  public
+    constructor Create; override;
   end;
 
 var
@@ -1277,6 +1290,11 @@ begin
     pvPdf.LoadFromFile(Format('%s\blank.pdf',[labelary]));
 end;
 
+procedure TmainW.DrawABox;
+begin
+  DrawALine(loBox);
+end;
+
 procedure TmainW.DrawALine(lineOrientation: TLineOrientation);
 var
   zo: TZPLLineOrigin;
@@ -1292,12 +1310,16 @@ begin
     case lineOrientation of
       loHorz: zmd := TZPLHorzLine(pvEngine.getZPLCommandValueObject(zmdHorzLine));
       loVert: zmd := TZPLVertLine(pvEngine.getZPLCommandValueObject(zmdVertLine));
+      loBox: begin
+        zmd := TZPLBox(pvEngine.getZPLCommandValueObject(zmdBox));
+        zmd.HeightMM := RectHeight.Value;
+      end;
     end;
 
     zo.Line := zmd;
     zmd.LineOrientation := lineOrientation;
-    zmd.LengthMM := StrToFloat(LineLength.Text);
-    zmd.ThickMM := StrToFloat(LineThick.Text);
+    zmd.LengthMM := LineLength.Value;
+    zmd.ThickMM := LineThick.Value;
     zmd.DotPerMM := zo.dpi;
     zplSource.CaretY := Succ(InsertSourceCodeLine(getSourceLine([zo, zmd])));
     zplSourceChange(Self);
@@ -1533,6 +1555,11 @@ begin
   end;
 end;
 
+procedure TmainW.BoxActionExecute(Sender: TObject);
+begin
+  DrawABox;
+end;
+
 procedure TmainW.rotateActionExecute(Sender: TObject);
 begin
   if pvPdf.Rotation < High(TPdfPageRotation) then
@@ -1735,8 +1762,6 @@ begin
 end;
 
 procedure TmainW.ZPLActionsUpdate(Action: TBasicAction; var Handled: Boolean);
-var
-  t: double;
 begin
   StartLabelAction.Enabled := not pvChanged;
   CommandAction.Enabled := (lv.Selected <> nil) and (lv.Selected.Data <> nil);
@@ -1745,8 +1770,9 @@ begin
   GetGraphicsAction.Enabled := zplSource.Lines.Count > 0;
   GraphicAction.Enabled := GraphicsBox.Text <> '';
   UpdateFieldOriginAction.Enabled := (zplSource.Lines.Count > 0) and (Pos('^FO',zplSource.Lines[zplSource.CaretY-1].ToUpper) > 0);
-  HorizontalLineAction.Enabled := (xTextPos.Value > 0) and (yTextPos.Value > 0) and (TryStrToFloat(LineLength.Text,t)) and (TryStrToFloat(LineThick.Text,t));
+  HorizontalLineAction.Enabled := (xTextPos.Value > 0) and (yTextPos.Value > 0) and (LineLength.Value > 0) and (LineThick.Value > 0);
   VerticalLineAction.Enabled := HorizontalLineAction.Enabled;
+  BoxAction.Enabled := HorizontalLineAction.Enabled and (RectHeight.Value > 0);
   Handled := True;
 end;
 
@@ -1995,6 +2021,8 @@ begin
       Result := TZPLHorzLine;
     zmdVertLine:
       Result := TZPLVertLine;
+    zmdBox:
+      Result := TZPLBox;
     zmdLineOrigin:
       Result := TZPLLineOrigin;
   else
@@ -2170,12 +2198,19 @@ begin
       Result := Format('^GB%d,%d,%d,B',[Trunc(FLength*FDotPerMM),t,t]);
     loVert:
       Result := Format('^GB%d,%d,%d,B',[t,Trunc(FLength*FDotPerMM),t]);
+    loBox:
+      Result := Format('^GB%d,%d,%d,B',[Trunc(FLength*FDotPerMM),Trunc(FHeight*FDotPerMM),t]);
   end;
 end;
 
 procedure TZPLLine.SetDotPerMM(const Value: integer);
 begin
   FDotPerMM := Value;
+end;
+
+procedure TZPLLine.SetHeight(const Value: double);
+begin
+  FHeight := Value;
 end;
 
 procedure TZPLLine.SetLength(const Value: double);
@@ -2197,6 +2232,7 @@ end;
 
 constructor TZPLHorzLine.Create;
 begin
+  inherited;
   FLineOrientation := loHorz;
 end;
 
@@ -2204,6 +2240,7 @@ end;
 
 constructor TZPLVertLine.Create;
 begin
+  inherited;
   FLineOrientation := loVert;
 end;
 
@@ -2213,7 +2250,12 @@ function TZPLLineOrigin.getStrCmd: string;
 begin
   if Comment then
   begin
-    Result := Format('^FX x=%d, y=%d, w=%f, t=%f ^FS',[X, Y, FLine.LengthMM, FLine.ThickMM])+#13#10;
+    case FLine.LineOrientation of
+      loHorz, loVert:
+        Result := Format('^FX x=%d, y=%d, w=%f, t=%f ^FS',[X, Y, FLine.LengthMM, FLine.ThickMM])+#13#10;
+      loBox:
+        Result := Format('^FX x=%d, y=%d, w=%f, h=%f, t=%f ^FS',[X, Y, FLine.LengthMM, FLine.HeightMM, FLine.ThickMM])+#13#10;
+    end;
   end;
   Result := Format('%s^FO%.4d,%.4d',[Result,FX*dpi,FY*dpi]);
 end;
@@ -2221,6 +2263,14 @@ end;
 procedure TZPLLineOrigin.SetLine(const Value: TZPLLine);
 begin
   FLine := Value;
+end;
+
+{ TZPLBox }
+
+constructor TZPLBox.Create;
+begin
+  inherited;
+  FLineOrientation := loBox;
 end;
 
 end.
