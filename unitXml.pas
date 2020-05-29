@@ -138,15 +138,45 @@ class procedure TXMLToView.xmlSaveLabelSettings(lbl: TZPLLabelSettings; const fi
 var
   doc: IXMLDocument;
   root, node: IXMLNode;
+  i: integer;
+  done: boolean;
+  name: string;
+  v: variant;
 begin
   doc := TXMLDocument.Create(filename);
   root := doc.DocumentElement;
-  node := doc.CreateNode('LabelFormat');
-  node.AddChild('Name').Text := lbl.name;
+  done := False;
+  node := nil;
+  for i := 0 to Pred(root.ChildNodes.Count) do
+  begin
+    node := root.ChildNodes[i];
+    if node.NodeName.ToLower = 'labelformat' then
+    begin
+      v := node.ChildValues['Name'];
+      if not VarIsNull(v) and (CompareStr(v,lbl.Name)=0) then
+        done := True;
+      { si un noeud de même nom existe, overwrite }
+      if done then
+        Break;
+    end;
+  end;
+
+  { sinon create }
+  if not done then
+    node := doc.CreateNode('LabelFormat')
+  else
+  begin
+    while node.ChildNodes.Count > 0 do
+      node.ChildNodes.Delete(0);
+  end;
+
+  node.AddChild('Name').Text := lbl.Name;
   node.AddChild('Width').Text := lbl.width.ToString;
   node.AddChild('Height').Text := lbl.height.ToString;
   node.AddChild('Orientation').Text := Ord(lbl.orientation).ToString;
-  root.ChildNodes.Add(node);
+  { add node to tree }
+  if not done then
+    root.ChildNodes.Add(node);
   doc.SaveToFile(filename);
 end;
 
@@ -245,7 +275,7 @@ begin
         begin
           l := TZPLLabelSettings.Create;
           Result.Add(l);
-          l.name := node.ChildNodes.Nodes['Name'].NodeValue;
+          l.Name := node.ChildNodes.Nodes['Name'].NodeValue;
           l.width := node.ChildNodes.Nodes['Width'].NodeValue;
           l.height := node.ChildNodes.Nodes['Height'].NodeValue;
           l.orientation := TPrintOrientation(node.ChildNodes.Nodes['Orientation'].NodeValue);
@@ -318,11 +348,15 @@ begin
   root := doc.AddChild('ZPLLines');
   root.Attributes['Version'] := lbl.Version;
   node := root.AddChild('LabelFormat');
-  node.AddChild('Name').Text := lbl.LabelName;
-  node.AddChild('Width').Text := lbl.width.ToString;
-  node.AddChild('Height').Text := lbl.height.ToString;
-  node.AddChild('Orientation').Text := Ord(lbl.PrintOrientation).ToString;
-  node.AddChild('PrintDensity').Text := ZPLPrintDensity[lbl.Density].ToString;
+  node.AddChild('Name').Text := lbl.LabelSettings.Name;
+  node.AddChild('Width').Text := lbl.LabelSettings.width.ToString;
+  node.AddChild('Height').Text := lbl.LabelSettings.height.ToString;
+  node.AddChild('Orientation').Text := Ord(lbl.LabelSettings.orientation).ToString;
+  node := root.AddChild('PrinterSettings');
+  node.AddChild('Name').Text := lbl.PrinterSettings.Name;
+  node.AddChild('NonPrintableTopMargin').Text := lbl.PrinterSettings.NonPrintableTopMargin.ToString;
+  node.AddChild('NonPrintableBottomMargin').Text := lbl.PrinterSettings.NonPrintableBottomMargin.ToString;
+  node.AddChild('PrintDensity').Text := Ord(lbl.PrinterSettings.PrintDensity).ToString;
   lines := root.AddChild('Lines');
   for i := 0 to lbl.Lines.Count-1 do
   begin
@@ -343,20 +377,21 @@ begin
           fname := Copy(lcLine,1,j+3);
           node.AddChild('Value').NodeValue := fname;
           node.Attributes['Type'] := 'GraphicFile';
-          Delete(lcLine,1,j+3);
-          { write the graphic to file }
-          bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
-          graphics := IncludeTrailingPathDelimiter(Format('%s\%s',[bin,'graphics']));
-          fname := Format('%s\%s',[graphics,fname]);
-          if not FileExists(fname) then
-          begin
-            writer := TStreamWriter.Create(fname, False, TEncoding.UTF8);
-            try
-              writer.Write(lcLine);
-            finally
-              writer.Free;
-            end;
-          end;
+          { do not overwrite the file, thus is the format lost ! }
+//          Delete(lcLine,1,j+3);
+//          { write the graphic to file }
+//          bin := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName));
+//          graphics := IncludeTrailingPathDelimiter(Format('%s\%s',[bin,'graphics']));
+//          fname := Format('%s\%s',[graphics,fname]);
+//          if not FileExists(fname) then
+//          begin
+//            writer := TStreamWriter.Create(fname, False, TEncoding.UTF8);
+//            try
+//              writer.Write(lcLine);
+//            finally
+//              writer.Free;
+//            end;
+//          end;
         end;
       end
       else
@@ -489,7 +524,7 @@ begin
           if not VarIsNull(v) then
           begin
             s := v;
-            Result.ALabel.name := s;
+            Result.ALabel.Name := s;
           end;
           v := line.ChildNodes.Nodes['Width'].NodeValue;
           if not VarIsNull(v) then
@@ -509,10 +544,32 @@ begin
             s := v;
             Result.ALabel.orientation := TPrintOrientation(StrToIntDef(s,0));
           end;
+        end
+        else if (node.NodeType = ntElement) and (node.NodeName.ToLower = 'printersettings') then
+        begin
+          line := node;
+          v := line.ChildNodes.Nodes['Name'].NodeValue;
+          if not VarIsNull(v) then
+          begin
+            s := v;
+            Result.APrinter.Name := s;
+          end;
+          v := line.ChildNodes.Nodes['NonPrintableTopMargin'].NodeValue;
+          if not VarIsNull(v) then
+          begin
+            s := v;
+            Result.APrinter.NonPrintableTopMargin := StrToIntDef(s,0);
+          end;
+          v := line.ChildNodes.Nodes['NonPrintableBottomMargin'].NodeValue;
+          if not VarIsNull(v) then
+          begin
+            s := v;
+            Result.APrinter.NonPrintableBottomMargin := StrToIntDef(s,0);
+          end;
           v := line.ChildNodes['PrintDensity'].NodeValue;
           if not VarIsNull(v) then
           begin
-            Result.ALabel.density := v;
+            Result.APrinter.PrintDensity := TPrintDensity(v);
           end;
         end;
       end;

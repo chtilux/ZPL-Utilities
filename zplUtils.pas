@@ -52,21 +52,46 @@ type
 
   TPrintOrientation = (poNormal,poInverse);
 
-  TZPLLabelSettings = class(TObject)
+  TZPLLabelSettings = class(TPersistent)
   private
     function getCaption: string;
   public
-    name: string;
+    Name: string;
     width,
     height: integer;
     orientation: TPrintOrientation;
-    density: integer;
+//    density: integer;
+    property Caption: string read getCaption;
+    procedure Clear;
+    procedure Assign(Source: TPersistent); override;
+  end;
+
+  TPrintDensity = (pi152,pi203,pi300,pi600);
+  TPrinterSettings = class
+  private
+    FName: string;
+    FNonPrintableBottomMargin: integer;
+    FNonPrintableTopMargin: integer;
+    FPrintDensity: TPrintDensity;
+    procedure SetName(const Value: string);
+    procedure SetNonPrintableBottomMargin(const Value: integer);
+    procedure SetNonPrintableTopMargin(const Value: integer);
+    procedure SetPrintDensity(const Value: TPrintDensity);
+    function getCaption: string;
+    function GetDPI: integer;
+  public
+    property Name: string read FName write SetName;
+    property NonPrintableTopMargin: integer read FNonPrintableTopMargin write SetNonPrintableTopMargin;
+    property NonPrintableBottomMargin: integer read FNonPrintableBottomMargin write SetNonPrintableBottomMargin;
+    property PrintDensity: TPrintDensity read FPrintDensity write SetPrintDensity;
+    property DPI: integer read GetDPI;
     property Caption: string read getCaption;
   end;
 
   TZPLLabelValues = class(TObject)
   public
     ALabel: TZPLLabelSettings;
+    APrinter: TPrinterSettings;
     Lines: TStrings;
     constructor Create;
     destructor Destroy; override;
@@ -78,10 +103,35 @@ type
   end;
 
   TFontSize = (fsSmall,fsMedium,fsLarge,fsXLarge,fsUser);
-  TPrintDensity = (pi152,pi203,pi300,pi600);
   TFieldOrientation = (foNormal,foRotated90,foInverted180,foBottomUp270);
   TTextJustify = (tjLeft,tjRight);
   TLineOrientation = (loHorz, loVert, loBox);
+
+  TPrintOrientationObject = class
+  private
+    FValue: TPrintOrientation;
+    function GetAsInteger: integer;
+    function GetAsString: string;
+    procedure SetValue(const Value: TPrintOrientation);
+  public
+    constructor Create(po: TPrintOrientation);
+    property Value: TPrintOrientation read FValue write SetValue;
+    property AsString: string read GetAsString;
+    property AsInteger: integer read GetAsInteger;
+  end;
+
+  TPrintDensityObject = class
+  private
+    FValue: TPrintDensity;
+    function GetAsInteger: integer;
+    function GetAsString: string;
+    procedure SetValue(const Value: TPrintDensity);
+  public
+    constructor Create(pd: TPrintDensity);
+    property Value: TPrintDensity read FValue write SetValue;
+    property AsString: string read GetAsString;
+    property AsInteger: integer read GetAsInteger;
+  end;
 
   TComboBoxHelper = class helper for TComboBox
   public
@@ -115,6 +165,8 @@ type
     FWidth: integer;
     FHeight: integer;
     FVersion: string;
+    FPrinterSettings: TPrinterSettings;
+    FLabelSettings: TZPLLabelSettings;
     procedure SetDensity(const Value: TPrintDensity);
     procedure SetPrintOrientation(const Value: TPrintOrientation);
     procedure SetDefFontSize(const Value: TFontSize);
@@ -122,19 +174,23 @@ type
     procedure SetHeight(const Value: integer);
     procedure SetWidth(const Value: integer);
     procedure SetLines(const Value: TStrings);
+    procedure SetLabelSettings(const Value: TZPLLabelSettings);
+    procedure SetPrinterSettings(const Value: TPrinterSettings);
   public
     constructor Create;
     destructor Destroy; override;
 //    procedure LoadFromFile(const filename: string);
     procedure SaveToFile(const filename: string);
-    property LabelName: string read FLabelName write SetLabelName;
-    property Density: TPrintDensity read FDensity write SetDensity default pi300;
-    property PrintOrientation: TPrintOrientation read FPrintOrientation write SetPrintOrientation default poNormal;
-    property Width: integer read FWidth write SetWidth;
-    property Height: integer read FHeight write SetHeight;
+//    property LabelName: string read FLabelName write SetLabelName;
+//    property Density: TPrintDensity read FDensity write SetDensity default pi300;
+//    property PrintOrientation: TPrintOrientation read FPrintOrientation write SetPrintOrientation default poNormal;
+//    property Width: integer read FWidth write SetWidth;
+//    property Height: integer read FHeight write SetHeight;
     property DefFontSize: TFontSize read FDefFontSize write SetDefFontSize default fsMedium;
     property Lines: TStrings read FLines write SetLines;
     property Version: string read FVersion;
+    property LabelSettings: TZPLLabelSettings read FLabelSettings write SetLabelSettings;
+    property PrinterSettings: TPrinterSettings read FPrinterSettings write SetPrinterSettings;
   end;
 
 const
@@ -151,10 +207,13 @@ const
   function GetFontSizeValue(Size: TFontSize): TFontSizeValue;
   function getPrintDensity(Value: integer): TPrintDensity;
 
+  procedure GetPrintOrientationObjects(list: TStrings);
+  procedure GetPrintDensityObjects(list: TStrings);
+
 implementation
 
 uses
-  SysUtils, u_pro_strings, unitXML;
+  SysUtils, u_pro_strings, unitXML, TypInfo;
 
 const
   ZPLFontSizeValues: array[TFontSize] of  TFontSizeValue = ((Width:10;Height:10),
@@ -162,6 +221,34 @@ const
                                                             (Width:40;Height:40),
                                                             (Width:60;Height:60),
                                                             (Width:0;Height:0));
+
+procedure GetPrintOrientationObjects(list: TStrings);
+var
+  po: TPrintOrientation;
+begin
+  list.BeginUpdate;
+  try
+    list.Clear;
+    for po := Low(TPrintOrientation) to High(TPrintOrientation) do
+      list.AddObject(ZPLPrintOrientation[po],TPrintOrientationObject.Create(po));
+  finally
+    list.EndUpdate;
+  end;
+end;
+
+procedure GetPrintDensityObjects(list: TStrings);
+var
+  pd: TPrintDensity;
+begin
+  list.BeginUpdate;
+  try
+    list.Clear;
+    for pd := Low(TPrintDensity) to High(TPrintDensity) do
+      list.AddObject(ZPLPrintDensityDesc[pd],TPrintDensityObject.Create(pd));
+  finally
+    list.EndUpdate;
+  end;
+end;
 
 function GetFontSizeValue(Size: TFontSize): TFontSizeValue;
 begin
@@ -295,9 +382,30 @@ end;
 
 { TZPLLabel }
 
+procedure TZPLLabelSettings.Assign(Source: TPersistent);
+begin
+  if (Source is TZPLLabelSettings)  then
+  begin
+    Name := TZPLLabelSettings(Source).Name;
+    width := TZPLLabelSettings(Source).width;
+    height := TZPLLabelSettings(Source).height;
+    orientation := TZPLLabelSettings(Source).orientation;
+  end
+  else
+    inherited;
+end;
+
+procedure TZPLLabelSettings.Clear;
+begin
+  Name := '';
+  width := 0;
+  height := 0;
+  orientation := poNormal;
+end;
+
 function TZPLLabelSettings.getCaption: string;
 begin
-  Result := Format('%s - [%d x %d mm]',[name, width, height]);
+  Result := Format('%s - [%d x %d mm] Orientation = %s',[Name, width, height, GetEnumName(TypeInfo(TPrintOrientation),Ord(orientation))]);
 end;
 
 { TZPLLabel }
@@ -354,10 +462,20 @@ begin
   FLabelName := Value;
 end;
 
+procedure TZPLLabel.SetLabelSettings(const Value: TZPLLabelSettings);
+begin
+  FLabelSettings := Value;
+end;
+
 procedure TZPLLabel.SetLines(const Value: TStrings);
 begin
   FLines.Clear;
   FLines.Assign(Value);
+end;
+
+procedure TZPLLabel.SetPrinterSettings(const Value: TPrinterSettings);
+begin
+  FPrinterSettings := Value;
 end;
 
 procedure TZPLLabel.SetPrintOrientation(const Value: TPrintOrientation);
@@ -389,13 +507,91 @@ constructor TZPLLabelValues.Create;
 begin
   ALabel := TZPLLabelSettings.Create;
   Lines := TStringList.Create;
+  APrinter := TPrinterSettings.Create;
 end;
 
 destructor TZPLLabelValues.Destroy;
 begin
   Lines.Free;
   ALabel.Free;
+  APrinter.Free;
   inherited;
+end;
+
+{ TPrintOrientationObject }
+
+constructor TPrintOrientationObject.Create(po: TPrintOrientation);
+begin
+  FValue := po;
+end;
+
+function TPrintOrientationObject.GetAsInteger: integer;
+begin
+  Result := Ord(FValue);
+end;
+
+function TPrintOrientationObject.GetAsString: string;
+begin
+  Result := ZPLPrintOrientation[FValue];
+end;
+
+procedure TPrintOrientationObject.SetValue(const Value: TPrintOrientation);
+begin
+  FValue := Value;
+end;
+
+{ TPrintDensityObject }
+
+constructor TPrintDensityObject.Create(pd: TPrintDensity);
+begin
+  FValue := pd;
+end;
+
+function TPrintDensityObject.GetAsInteger: integer;
+begin
+  Result := ZPLPrintDensity[FValue];
+end;
+
+function TPrintDensityObject.GetAsString: string;
+begin
+  Result := ZPLPrintDensityDesc[FValue];
+end;
+
+procedure TPrintDensityObject.SetValue(const Value: TPrintDensity);
+begin
+  FValue := Value;
+end;
+
+{ TPrinterSettings }
+
+function TPrinterSettings.getCaption: string;
+begin
+  Result := Format('%s - [Non printable T.%d x B.%d mm] Density = %s',[Name, NonPrintableTopMargin, NonPrintableBottomMargin, GetEnumName(TypeInfo(TPrintDensity),Ord(PrintDensity))]);
+end;
+
+function TPrinterSettings.GetDPI: integer;
+begin
+  Result := ZPLPrintDensity[FPrintDensity];
+end;
+
+procedure TPrinterSettings.SetName(const Value: string);
+begin
+  FName := Value;
+end;
+
+procedure TPrinterSettings.SetNonPrintableBottomMargin(const Value: integer);
+begin
+  FNonPrintableBottomMargin := Value;
+end;
+
+procedure TPrinterSettings.SetNonPrintableTopMargin(const Value: integer);
+begin
+  FNonPrintableTopMargin := Value;
+end;
+
+procedure TPrinterSettings.SetPrintDensity(const Value: TPrintDensity);
+begin
+  FPrintDensity := Value;
 end;
 
 end.

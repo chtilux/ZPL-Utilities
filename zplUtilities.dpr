@@ -12,7 +12,10 @@ uses
   Vcl.Themes,
   Vcl.Styles,
   zplUtils in 'zplUtils.pas',
-  previewLabelUnit in 'previewLabelUnit.pas';
+  previewLabelUnit in 'previewLabelUnit.pas',
+  LabelSettingsWindow in 'LabelSettingsWindow.pas' {LabelSettingsW},
+  PrinterSettingsWindow in 'PrinterSettingsWindow.pas' {PrinterSettingsW},
+  zplCommands in 'zplCommands.pas';
 
 {$R *.res}
 
